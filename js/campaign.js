@@ -60,12 +60,12 @@
   Drupal.campaign.executeQueue = function() {
     var settings = Drupal.settings.campaign;
     if (settings && settings.dialogs) {
-      _.each(settings.dialogs, function(obj) {
+      for (var i = 0, l = settings.dialogs.length; i < l; i++) {
+        var obj = settings.dialogs[i];
         Drupal.campaign.run(function() {
-          console.log(obj);
           this.ui(obj);
         });
-      });
+      }
       // Empty the list not to prompt the user on possible AJAX requests.
       settings.dialogs = [];
     }

@@ -138,8 +138,6 @@ function campaign_context_page_reaction() {
 function campaign_page_build() {
   if (arg(0) != 'admin') {
     $path = drupal_get_path('module', 'campaign');
-    libraries_load('underscore');
-    drupal_add_library('underscore', 'underscore');
     // Add a script which redirects in case of a js_redirect url query and place
     // it as early as possible to avoid unnecessary loading on the client side.
     $js_redirect = array(

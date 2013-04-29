@@ -1,6 +1,5 @@
 name = Campaign
 description = Build Facebook campaigns
-dependencies[] = underscore
 dependencies[] = context
 dependencies[] = social
 package = custom
