@@ -48,12 +48,16 @@ function campaign_gateway($namespace, $config) {
     $query = array('js_redirect' => $config['fb']['tab']);
   }
 
+  // @TODO for some rason, url() does not prepend the language prefix.
+  global $language;
+  $prefix = !empty($language->prefix) ? $language->prefix . '/' : '';
+
   // (3) If the user has liked the page, redirect to the configured page.
   if ($data['page']['liked']) {
-    header('Location: ' . url($config['config']['postlike'], array('absolute' => TRUE, 'query' => $query)));
+    header('Location: ' . url($config['config']['postlike'], array('absolute' => TRUE, 'query' => $query, 'prefix' => $prefix)));
   }
   // (4) If not redirect to the pre-liked page.
   else {
-    header('Location: ' . url($config['config']['prelike'], array('absolute' => TRUE, 'query' => $query)));
+    header('Location: ' . url($config['config']['prelike'], array('absolute' => TRUE, 'query' => $query, 'prefix' => $prefix)));
   }
 }
