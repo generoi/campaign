@@ -1,0 +1,39 @@
+table.campaign-config-summary {
+  border: 0;
+  margin: 0.5em 1em;
+}
+table.campaign-config-summary tr {
+  border: 0;
+  background: transparent;
+}
+table.campaign-config-summary td {
+  padding: 0;
+}
+/* label */
+table.campaign-config-summary tr td:first-child {
+  font-weight: bold;
+  white-space: nowrap;
+  padding-right: 1em;
+  vertical-align: top;
+}
+table.campaign-config-summary tr td:first-child:after {
+  content: ':'
+}
+/* icon*/
+table.campaign-config-overview > tbody > tr > td:first-child {
+  width: 100px;
+}
+
+.campaign-config-label .toggle-details:hover {
+  text-decoration: none;
+}
+.campaign-config-label .toggle-details:before {
+  content: '\25B8';
+  padding-right: 1em;
+}
+.campaign-config-label .toggle-details.open:before {
+  content: '\25BE';
+}
+.campaign-config-details {
+  display: none;
+}

@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * @file campaign_ckeditor.module
+ * TODO: Enter file description here.
+ */
+
+
+/**
+ * Implements hook_ckeditor_plugin().
+ */
+function campaign_ckeditor_ckeditor_plugin() {
+  return array(
+    'facebookDialog' => array(
+      // Name of the plugin used to write it.
+      'name' => 'facebookDialog',
+      // Description of the plugin - it would be displayed in the plugins management section of profile settings.
+      'desc' => t('Facebook Dialog'),
+      // The full path to the CKEditor plugins directory, with the trailing slash.
+      'path' => drupal_get_path('module', 'campaign_ckeditor') . '/plugins/facebook_dialog/',
+      'buttons' => array(
+        'FacebookDialog' => array(
+          'icon' => 'icon.jpg',
+          'label' => 'Add Facebook Dialog Button',
+        )
+      )
+    )
+  );
+}
+

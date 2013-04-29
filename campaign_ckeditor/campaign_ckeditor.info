@@ -1,0 +1,6 @@
+name = Campaign CKEditor
+description = Campaign integration to CKEditor
+dependencies[] = ckeditor
+dependencies[] = campaign
+package = custom
+core = 7.x

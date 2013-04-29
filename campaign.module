@@ -1,0 +1,415 @@
+<?php
+
+/**
+ * @file campaign.module
+ */
+
+/**
+ * Implements hook_help().
+ */
+function campaign_help($path, $arg) {
+  switch ($path) {
+    case 'admin/config/campaigns':
+      return '<p>' . t('') . '</p>';
+    case 'admin/config/campaigns/add':
+      $content = '<p>' . t('To create a campaign you first have to create it in the !link. Once created the campaign will be assigned an Application ID, based on this key Drupal will prefetch some variables unique for the campaign. For example the namespace which will be used as the gateway path.', array(
+          '!link' => l(t('Facebook Developers section'), 'https://developers.facebook.com/apps/', array('attributes' => array('target' => '_blank')))
+        )) . '</p>';
+      $content .= '<p>' . t('Remember to remove the default sandboxed-setting, otherwise you will not be able to create the campaign.') . '</p>';
+      return $content;
+    case 'admin/config/campaigns/edit':
+      return '<p>' . t('') . '</p>';
+  }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function campaign_permission() {
+  $permissions['administer campaigns'] = array(
+    'title' => t('Administer campaigns.'),
+    'restrict access' => TRUE,
+    'description' => t('Control campaigns settings.'),
+  );
+  return $permissions;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function campaign_menu() {
+  $items['fb/%context'] = array(
+    'page callback' => 'campaign_fb_redirect',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'file' => 'campaign.pages.inc',
+  );
+  $items['admin/config/campaigns'] = array(
+    'title' => 'Campaigns',
+    'page callback' => 'campaign_overview',
+    'access arguments' => array('administer campaigns'),
+    'file' => 'campaign.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/config/campaigns/add'] = array(
+    'title' => 'Add a campaign by path',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('campaign_context_add_form'),
+    'access arguments' => array('administer campaigns'),
+    'file' => 'campaign.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+  $items['admin/config/campaigns/%context'] = array(
+    'title' => 'Configure campaign by path',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('campaign_context_edit_form', 3),
+    'access arguments' => array('administer campaigns'),
+    'file' => 'campaign.admin.inc',
+  );
+  $items['admin/config/campaigns/%context/delete'] = array(
+    'title' => 'Delete a campaign by path',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('campaign_context_delete_form', 3),
+    'access arguments' => array('administer campaigns'),
+    'file' => 'campaign.admin.inc',
+  );
+  $items['admin/config/campaigns/%context/rename'] = array(
+    'title' => 'Rename a campaign by path',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('campaign_context_rename_form', 3),
+    'access arguments' => array('administer campaigns'),
+    'file' => 'campaign.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_ctools_plugin_api().
+ */
+function campaign_ctools_plugin_api($owner, $api) {
+  if ($owner == 'campaign' && $api == 'campaign') {
+    return array('version' => 1);
+  }
+}
+
+/**
+ * Implements hook_context_plugins().
+ */
+function campaign_context_plugins() {
+  return array(
+    'campaign_context_reaction' => array(
+      'handler' => array(
+        'path' => drupal_get_path('module', 'campaign'),
+        'file' => 'campaign.context.inc',
+        'class' => 'campaign_context_reaction',
+        'parent' => 'context_reaction',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_context_registry().
+ */
+function campaign_context_registry() {
+  return array(
+    'reactions' => array(
+      'campaign_context_reaction' => array(
+        'title' => t('Campaigns'),
+        'description' => t('Control campaigns using the Campaign module'),
+        'plugin' => 'campaign_context_reaction',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_context_page_reaction().
+ */
+function campaign_context_page_reaction() {
+  if ($plugin = context_get_plugin('reaction', 'campaign_context_reaction')) {
+    $plugin->execute();
+  }
+}
+
+/**
+ * Implements hook_page_build().
+ */
+function campaign_page_build() {
+  if (arg(0) != 'admin') {
+    $path = drupal_get_path('module', 'campaign');
+    libraries_load('underscore');
+    drupal_add_library('underscore', 'underscore');
+    // Add a script which redirects in case of a js_redirect url query and place
+    // it as early as possible to avoid unnecessary loading on the client side.
+    $js_redirect = array(
+      '#type' => 'markup',
+      '#markup' => "<script>(function(a){if(a)window.top.location=a;})(decodeURIComponent((/js_redirect=([^&]+)/.exec(window.location.search) || [,''])[1].replace(/\+/g,' ')));</script>",
+      '#weight' => -1,
+    );
+    drupal_add_html_head($js_redirect, 'js_redirect');
+    drupal_add_js($path . '/js/campaign.js');
+  }
+}
+
+/**
+ * Implements hook_boot().
+ *
+ * Implement a gateway page while bootstrapping as little as possible.
+ */
+function campaign_boot() {
+  if (arg(1) == 'gateway') {
+    $namespace = arg(2);
+    $result = db_query('SELECT reactions FROM {context} WHERE name = :name', array(':name' => $namespace))->fetchField();
+    $result = unserialize($result);
+    // If a campaign was found for the namespace, trigger gateway logic and exit.
+    if ($result) {
+      require_once __DIR__ . '/campaign.pages.inc';
+      campaign_gateway($namespace, $result['campaign_context_reaction']['campaign']);
+      exit();
+    }
+  }
+}
+
+/**
+ * Example contents of signed request:
+ * @code
+ * $data = array(
+ *   'algorithm' => 'HMAC-SHA256',
+ *   'issued_at' => 1366715394,
+ *   'page' => array(
+ *     'id' => 221652774554809,
+ *     'liked' => 1,
+ *     'admin' => 1,
+ *   ),
+ *   'user' => array(
+ *     'country' => 'fi',
+ *     'locale' => 'en_US',
+ *     'age' => array(
+ *       'min' => 21,
+ *     ),
+ *   ),
+ * );
+ * @endcode
+ */
+function campaign_get_signed_request($appid, $secret) {
+  static $loaded = FALSE;
+  if (!$loaded) {
+    drupal_load('module', 'libraries');
+    require_once libraries_get_path('facebook-php-sdk') . '/src/facebook.php';
+  }
+
+  $facebook = new Facebook(array(
+    'appId' => $appid,
+    'secret' => $secret,
+    'fileUpload' => FALSE,
+    'trustForwarded' => TRUE,
+  ));
+
+  return $facebook->getSignedRequest();
+}
+
+/**
+ * Prepare a settings object containing all required keys.
+ */
+function campaign_load_defaults(&$campaign, $defaults = array()) {
+  $defaults = drupal_array_merge_deep(array(
+    'fb' => array(
+      'appid' => NULL,
+      'secret' => NULL,
+      'tab' => NULL,
+      'status' => FALSE,
+    ),
+    'config' => array(
+      'prelike' => NULL,
+      'postlike' => NULL,
+    )
+  ), $defaults);
+
+  foreach ($defaults as $key => $default) {
+    if (!isset($campaign[$key])) {
+      $campaign[$key] = $default;
+    }
+  }
+}
+
+/**
+ * Get the app information from a graph request by passing the app_id.
+ * @TODO this should really be a batch request...
+ */
+function campaign_get_graph_app($app_id, $reset = FALSE) {
+  $apps = &drupal_static(__FUNCTION__);
+  if (!isset($apps)) {
+    $apps = array();
+  }
+  if (!isset($apps[$app_id]) || $reset) {
+    $cid = 'campaign_graph:' . $app_id;
+    // If not explicitly told to reset, try fetching data from the cache.
+    if (!$reset && ($cache = cache_get($cid))) {
+      $apps[$app_id] = $cache->data;
+    }
+    else {
+      $url = 'https://graph.facebook.com/' . $app_id;
+      $response = drupal_http_request($url, array(
+        'timeout' => 3,
+      ));
+
+      drupal_alter('campaign_graph_data', $app_id, $response);
+
+      // Make sure we got a response
+      if (isset($response->data)) {
+        $data = json_decode($response->data);
+        // The request was valid, cache it.
+        if (!isset($data->error)) {
+          cache_set($cid, $data, 'cache');
+        }
+        // Still statically cache graph errors, but dont cache them in the
+        // backend.
+        $apps[$app_id] = $data;
+      }
+      // HTTP request error occured.
+      else {
+        // Mimic the Graph API error structure so it can be used as an error
+        // pattern in validate functions.
+        $apps[$app_id] = (object) array(
+          'error' => (object) array(
+            'message' => $response->error
+          ),
+        );
+      }
+    }
+  }
+  return $apps[$app_id];
+}
+
+function campaign_social_facebook_defaults_alter(&$settings) {
+  $campaign = drupal_static('campaign_context', array());
+  if (!empty($campaign)) {
+    $settings['facebook']['options'] += array(
+      'appId' => isset($campaign['fb']['appid']) ? $campaign['fb']['appid'] : NULL,
+      'status' => isset($campaign['fb']['status']) ? $campaign['fb']['status'] : FALSE,
+    );
+  }
+  $config = array(
+    'autogrow' => TRUE,
+    'scrollTop' => TRUE,
+  );
+  if (isset($campaign['config'])) {
+    $config += $campaign['config'];
+  }
+  drupal_add_js(array('campaign' => $config), 'setting');
+}
+
+/**
+ * Return the campaign form.
+ */
+function campaign_campaign_form(array &$form, $namespace, $campaign) {
+  // The gateway path for this namespace, used for default values.
+  $gateway_path = campaign_get_gateway_path($namespace);
+  campaign_load_defaults($campaign);
+
+  $form['campaign'] = array(
+    '#type' => 'container',
+    '#title' => t('Campaign'),
+    '#multilingual' => TRUE,
+    '#collapsible' => FALSE,
+    '#tree' => TRUE,
+    '#access' => user_access('administer campaigns'),
+    '#weight' => 40,
+  );
+
+  $form['campaign']['fb'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Facebook configurations'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#tree' => TRUE,
+    '#access' => user_access('administer campaigns'),
+    '#weight' => 40,
+  );
+  $form['campaign']['fb']['appid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Facebook Application ID'),
+    '#description' => t('The application ID this campaign will use.'),
+    '#maxlength' => 15,
+    '#default_value' => $campaign['fb']['appid'],
+  );
+  $form['campaign']['fb']['secret'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Facebook Application Secret'),
+    '#description' => t('The application secret this campaign will use. You can find it at !link', array(
+      '!link' => l(t('Facebook developers center'), 'https://developers.facebook.com/apps/' . (isset($campaign['fb']['appid']) ? $campaign['fb']['appid']  . '/summary' : ''), array('attributes' => array('target' => '_blank'))),
+    )),
+    '#maxlength' => 32,
+    '#default_value' => $campaign['fb']['secret'],
+  );
+  $form['campaign']['fb']['tab'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Facebook Tab URL'),
+    '#description' => t('The tab url of the facebook page where the application will be located. This is where users will be redirected. You can get this url by first adding !link, afterwhich you should visit the page tab, copy the URL and paste it in here. Remember to update this when going live!', array(
+      '!link' => l(t('adding it to your page'), 'http://www.facebook.com/dialog/pagetab?app_id=' . (isset($campaign['fb']['appid']) ? $campaign['fb']['appid'] : '') . '&redirect_uri=' . url('<front>', array('absolute' => TRUE)), array('attributes' => array('target' => '_blank'))),
+    )),
+    '#maxlength' => 255,
+    '#default_value' => $campaign['fb']['tab'],
+  );
+  $form['campaign']['fb']['status'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Check Facebook Login status'),
+    '#description' => t('Only check this if you need to check if the user has authenticated your application.'),
+    '#default_value' => $campaign['fb']['status'],
+  );
+
+  $form['campaign']['config'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Application configurations'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#tree' => TRUE,
+    '#access' => user_access('administer campaigns'),
+    '#weight' => 50,
+  );
+  $form['campaign']['config']['prelike'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Before like page (Fangate)'),
+    '#description' => t('The path to display for users who have not liked the page. You should use node/X paths as these will automatically use the correct HTTP protocol.'),
+    '#maxlength' => 255,
+    '#default_value' => $campaign['config']['prelike'],
+  );
+  $form['campaign']['config']['postlike'] = array(
+    '#type' => 'textfield',
+    '#title' => t('After like page'),
+    '#description' => t('The path where users who have liked the page will be redirected. You should use node/X paths as these will automatically use the correct HTTP protocol.'),
+    '#maxlength' => 255,
+    '#default_value' => $campaign['config']['postlike'],
+  );
+
+  // $form['campaign']['tokens'] = array(
+  //   '#theme' => 'token_tree',
+  //   '#token_types' => 'all',
+  //   '#weight' => 999,
+  //   '#dialog' => TRUE,
+  // );
+}
+
+/**
+ * Return the gateway path of a campaign namespace.
+ */
+function campaign_get_gateway_path($namespace) {
+  $path = url('gateway/' . $namespace . '/', array(
+    'absolute' => TRUE,
+  ));
+  // @TODO can we introduce an alter hook here?
+  return $path;
+}
+
+/**
+ * Prompt the user with a feed dialog. The parameters are passed as is to
+ * FB.ui().
+ */
+function campaign_add_dialog($parameters) {
+  drupal_add_js(array('campaign' => array(
+    'dialogs' => array(
+      $parameters,
+    ),
+  )), 'setting');
+}
