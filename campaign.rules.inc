@@ -126,6 +126,56 @@ function campaign_rules_action_info() {
 }
 
 /**
+ * Implements hook_rules_condition_info().
+ */
+function campaign_rules_condition_info() {
+  $conditions['campaign_webform_field_comparison'] = array(
+    'label' => t('Webform question comparison'),
+    'parameter' => array(
+      'data' => array(
+        'type' => '*',
+        'label' => t('Data to compare'),
+        'description' => t('The data to compare, you should select the "data" choice 99% of the time.'),
+        'allow null' => TRUE,
+      ),
+      'question' => array(
+        'label' => t('Question field key'),
+        'help' => t('Enter the machine readable field key of the question component. The raw value (i.e. the option key instead of the option value) will be used for comparisons.'),
+        'type' => 'text',
+      ),
+      'solution' => array(
+        'label' => t('Solution field key'),
+        'help' => t('Enter the machine readable field key of the solution component. The raw value will be used for comparisons.'),
+        'type' => 'text',
+      ),
+    ),
+    'group' => t('Webform'),
+  );
+  return $conditions;
+}
+
+/**
+ * Implements hook_webform_field_comparison().
+ *
+ * Compare webform component values.
+ */
+function campaign_webform_field_comparison($data, $question_key, $solution_key) {
+  // Make sure the components exist.
+  if (!isset($data['components'][$question_key])) {
+    watchdog('campaign', 'Webform component %comp does not exist', array('%comp' => $question_key));
+    return FALSE;
+  }
+  if (!isset($data['components'][$solution_key])) {
+    watchdog('campaign', 'Webform component %comp does not exist', array('%comp' => $solution_key));
+    return FALSE;
+  }
+  $question = intval($data['components'][$question_key]['value'][0]);
+  $solution = intval($data['components'][$solution_key]['value'][0]);
+
+  return $question === $solution;
+}
+
+/**
  * Display a feed dialog.
  */
 function campaign_action_feed_dialog($parameters) {
