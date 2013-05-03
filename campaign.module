@@ -221,6 +221,7 @@ function campaign_load_defaults(&$campaign, $defaults = array()) {
     'config' => array(
       'prelike' => NULL,
       'postlike' => NULL,
+      'langcode' => NULL,
     )
   ), $defaults);
 
@@ -366,6 +367,18 @@ function campaign_campaign_form(array &$form, $namespace, $campaign) {
     '#access' => user_access('administer campaigns'),
     '#weight' => 50,
   );
+  $language_list = language_list();
+  $languages = array();
+  foreach ($language_list as $langcode => $language) {
+    $languages[$langcode] = $language->name;
+  }
+  $form['campaign']['config']['langcode'] = array(
+    '#type' => 'select',
+    '#title' => t('Language'),
+    '#description' => t('Campaigns can not be translated at this moment so you have to specify its language.'),
+    '#options' => $languages,
+    '#default_value' => $campaign['config']['langcode'],
+  );
   $form['campaign']['config']['prelike'] = array(
     '#type' => 'textfield',
     '#title' => t('Before like page (Fangate)'),
@@ -392,9 +405,10 @@ function campaign_campaign_form(array &$form, $namespace, $campaign) {
 /**
  * Return the gateway path of a campaign namespace.
  */
-function campaign_get_gateway_path($namespace) {
+function campaign_get_gateway_path($namespace, $language = NULL) {
   $path = url('gateway/' . $namespace . '/', array(
     'absolute' => TRUE,
+    'language' => $language,
   ));
   // @TODO can we introduce an alter hook here?
   return $path;
