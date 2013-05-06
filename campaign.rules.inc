@@ -15,30 +15,35 @@ function campaign_rules_action_info() {
         'type' => 'uri',
         'label' => t('Picture'),
         'description' => t('The URL of a picture attached to this post. The picture must be at least 50px by 50px (though minimum 200px by 200px is preferred) and have a maximum aspect ratio of 3:1'),
+        'translatable' => TRUE,
         'optional' => TRUE,
       ),
       'link' => array(
         'type' => 'uri',
         'label' => t('Link path'),
         'description' => t('The link attached to this post.'),
+        'translatable' => TRUE,
       ),
       'name' => array(
         'type' => 'text',
         'label' => t('Name'),
         'description' => t('The name of the link attachment.'),
         'optional' => TRUE,
+        'translatable' => TRUE,
       ),
       'caption' => array(
         'type' => 'text',
         'label' => t('Caption'),
         'description' => t('The caption of the link (appears beneath the link name). If not specified, this field is automatically populated with the URL of the link.'),
         'optional' => TRUE,
+        'translatable' => TRUE,
       ),
       'description' => array(
         'type' => 'text',
         'label' => t('Description'),
         'description' => t('The description of the link (appears beneath the link caption). If not specified, this field is automatically populated by information scraped from the link, typically the title of the page.'),
         'optional' => TRUE,
+        'translatable' => TRUE,
       ),
       // @TODO actions, properties, ref, source, from, to, display, app_id, redirect_uri
     ),
@@ -56,17 +61,20 @@ function campaign_rules_action_info() {
         'label' => t('Picture'),
         'description' => t('By default a picture will be taken from the link specified. The URL of a picture to include in the message. The picture will be shown next to the link.'),
         'optional' => TRUE,
+        'translatable' => TRUE,
       ),
       'link' => array(
         'type' => 'uri',
         'label' => t('Link path'),
         'description' => t('The link to send in the message.'),
+        'translatable' => TRUE,
       ),
       'name' => array(
         'type' => 'text',
         'label' => t('Name'),
         'description' => t('By default a title will be taken from the link specified. The name of the link, i.e. the text to display that the user will click on.'),
         'optional' => TRUE,
+        'translatable' => TRUE,
       ),
       'to' => array(
         'type' => 'text',
@@ -79,6 +87,7 @@ function campaign_rules_action_info() {
         'label' => t('Description'),
         'description' => t('By default a description will be taken from the link specified. Descriptive text to show below the link.'),
         'optional' => TRUE,
+        'translatable' => TRUE,
       ),
     ),
   );
@@ -95,12 +104,14 @@ function campaign_rules_action_info() {
         'label' => t('Title'),
         'description' => t('Optional, the title for the Dialog. Maximum length is 50 characters.'),
         'optional' => TRUE,
+        'translatable' => TRUE,
       ),
       'message' => array(
         'type' => 'text',
         'label' => t('Message'),
         'description' => t('The Request string the receiving user will see. It appears as a request posed by the sending user. The maximum length is 130 characters. The message value is displayed in Notifications and can also be viewed on the App Center Requests.'),
         'optional' => TRUE,
+        'translatable' => TRUE,
       ),
       'to' => array(
         'type' => 'text',
@@ -119,6 +130,7 @@ function campaign_rules_action_info() {
         'label' => t('Data'),
         'description' => t('Optional, additional data you may pass for tracking. This will be stored as part of the request objects created. The maximum length is 255 characters.'),
         'optional' => TRUE,
+        'translatable' => TRUE,
       ),
     ),
   );
