@@ -3,8 +3,7 @@
     , isInit = false;
 
   // Sniff facebook.
-  // @TODO this isn't really reliable, maybe we can finetune it?
-  if (window.self != window.top) {
+  if ((window.name || '').indexOf('app_runner') === 0) {
     $('html').addClass('facebook');
     isFacebook = true; // Drupal.settings doesn't exist yet.
   }
