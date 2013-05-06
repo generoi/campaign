@@ -66,7 +66,6 @@
     for (var i = 0, l = dialogs.length; i < l; i++) {
       var obj = dialogs[i];
       Drupal.campaign.run(function() {
-        console.log(obj);
         this.ui(obj);
       });
     }
@@ -83,6 +82,28 @@
     if (isInit) return callback.call(FB);
     $.subscribe('fb.init', function() {
       callback.call(FB);
+    });
+  };
+
+  /**
+   * Transform a webform by placing component descriptions as input
+   * placeholders.
+   *
+   * Usage:
+   * Drupal.campaign.usePlaceholder($('.webform-client-form'));
+   */
+  Drupal.campaign.usePlaceholder = function($el) {
+    // Default to webform.
+    if (!$el) $el = $('.webform-client-form');
+
+    // @TODO what about checkboxes and radios?
+    $el.find('.description').each(function() {
+      var $this = $(this).hide()
+        , text = $this.text()
+        , $input = $this.prev('input');
+
+      $input.prop('placeholder', text);
+      if ($.fn.placeholder) $input.placeholder();
     });
   };
 
