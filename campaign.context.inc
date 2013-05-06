@@ -37,6 +37,7 @@ class campaign_context_reaction extends context_reaction {
           $instance_names[] = $context->name;
         }
       }
+      $output['contexts'] = $instance_names;
 
       if (!empty($output)) {
         $instance = 'context:' . implode(',', $instance_names);

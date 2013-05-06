@@ -192,6 +192,7 @@ function campaign_boot() {
  * @endcode
  */
 function campaign_get_signed_request($appid, $secret) {
+  // @TODO define a real library instead.
   static $loaded = FALSE;
   if (!$loaded) {
     drupal_load('module', 'libraries');
@@ -223,7 +224,7 @@ function campaign_load_defaults(&$campaign, $defaults = array()) {
       'prelike' => NULL,
       'postlike' => NULL,
       'langcode' => NULL,
-    )
+    ),
   ), $defaults);
 
   foreach ($defaults as $key => $default) {
@@ -282,6 +283,21 @@ function campaign_get_graph_app($app_id, $reset = FALSE) {
   return $apps[$app_id];
 }
 
+function campaign_preprocess_html(&$variables) {
+  $campaign = drupal_static('campaign_context', array());
+  if (!empty($campaign)) {
+    $variables['classes_array'][] = 'campaign';
+    foreach ($campaign['contexts'] as $context) {
+      $variables['classes_array'][] = 'campaign-' . $context;
+    }
+  }
+}
+
+/**
+ * Implements hook_social_facebook_defaults_alter().
+ *
+ * Hook in Application settings to socialite.
+ */
 function campaign_social_facebook_defaults_alter(&$settings) {
   $campaign = drupal_static('campaign_context', array());
   if (!empty($campaign)) {
