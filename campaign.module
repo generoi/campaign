@@ -147,6 +147,7 @@ function campaign_page_build() {
     );
     drupal_add_html_head($js_redirect, 'js_redirect');
     drupal_add_js($path . '/js/campaign.js');
+    drupal_add_css($path . '/campaign.css');
   }
 }
 
@@ -419,9 +420,9 @@ function campaign_get_gateway_path($namespace, $language = NULL) {
  * FB.ui().
  */
 function campaign_add_dialog($parameters) {
-  drupal_add_js(array('campaign' => array(
-    'dialogs' => array(
-      $parameters,
-    ),
-  )), 'setting');
+  // drupal_get_js() has only been executed when the webform_insert event is
+  // used. Hack this by forcing inline javascript as a message and then hiding
+  // the message element with css.
+  $json = json_encode($parameters);
+  drupal_set_message('<script>var dialogs = dialogs || [];dialogs.push(' . $json . ');</script>', 'js');
 }

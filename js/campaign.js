@@ -58,17 +58,20 @@
   * Execute queued dialogs added through Drupal.
   */
   Drupal.campaign.executeQueue = function() {
-    var settings = Drupal.settings.campaign;
-    if (settings && settings.dialogs) {
-      for (var i = 0, l = settings.dialogs.length; i < l; i++) {
-        var obj = settings.dialogs[i];
-        Drupal.campaign.run(function() {
-          this.ui(obj);
-        });
-      }
+    var dialogs = window.dialogs || [];
+    if (Drupal.settings.campaign && Drupal.settings.campaign.dialogs) {
+      dialogs = dialogs.concat(Drupal.settings.campaign.dialogs);
       // Empty the list not to prompt the user on possible AJAX requests.
       settings.dialogs = [];
     }
+    for (var i = 0, l = dialogs.length; i < l; i++) {
+      var obj = dialogs[i];
+      Drupal.campaign.run(function() {
+        console.log(obj);
+        this.ui(obj);
+      });
+    }
+    window.dialogs = [];
   };
 
   /**
