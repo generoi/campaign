@@ -3,7 +3,7 @@
     , isInit = false;
 
   // Sniff facebook.
-  if ((window.name || '').indexOf('app_runner') === 0) {
+  if (/^(app_runner|iframe_canvas)/.test(window.name || '')) {
     $('html').addClass('facebook');
     isFacebook = true; // Drupal.settings doesn't exist yet.
   }
