@@ -37,9 +37,9 @@ class campaign_context_reaction extends context_reaction {
           $instance_names[] = $context->name;
         }
       }
-      $output['contexts'] = $instance_names;
 
-      if (!empty($output)) {
+      if (!empty($output) && !empty($instance_names)) {
+        $output['contexts'] = $instance_names;
         $instance = 'context:' . implode(',', $instance_names);
         // Allow altering
         drupal_alter('campaign_campaign_view', $output, $instance);

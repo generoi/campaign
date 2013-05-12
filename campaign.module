@@ -225,6 +225,10 @@ function campaign_load_defaults(&$campaign, $defaults = array()) {
       'postlike' => NULL,
       'langcode' => NULL,
     ),
+    'assets' => array(
+      'css' => array(),
+      'js' => array(),
+    ),
   ), $defaults);
 
   foreach ($defaults as $key => $default) {
@@ -283,12 +287,30 @@ function campaign_get_graph_app($app_id, $reset = FALSE) {
   return $apps[$app_id];
 }
 
+/**
+ * Implements hook_preprocess_html().
+ */
 function campaign_preprocess_html(&$variables) {
   $campaign = drupal_static('campaign_context', array());
   if (!empty($campaign)) {
+    // Set campaign specific clasess on the body
     $variables['classes_array'][] = 'campaign';
     foreach ($campaign['contexts'] as $context) {
       $variables['classes_array'][] = 'campaign-' . $context;
+    }
+    if (drupal_get_normal_path($campaign['config']['prelike']) == $_GET['q']) {
+      $variables['classes_array'][] = 'before-like';
+    }
+    if (drupal_get_normal_path($campaign['config']['postlike']) == $_GET['q']) {
+      $variables['classes_array'][] = 'after-like';
+    }
+
+    // Include assets.
+    foreach ($campaign['assets']['css'] as $css) {
+      drupal_add_css(str_replace('%t', path_to_theme(), $css));
+    }
+    foreach ($campaign['assets']['js'] as $js) {
+      drupal_add_js(str_replace('%t', path_to_theme(), $js));
     }
   }
 }
@@ -411,12 +433,43 @@ function campaign_campaign_form(array &$form, $namespace, $campaign) {
     '#default_value' => $campaign['config']['postlike'],
   );
 
+  $form['campaign']['assets'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Assets'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#tree' => TRUE,
+    '#access' => user_access('administer campaigns'),
+    '#weight' => 55,
+  );
+  $form['campaign']['assets']['css'] = array(
+    '#title' => t('Additional CSS'),
+    '#description' => t('Put each file on a separate line, relative to the Drupal root directory. %t will be expanded into the theme path. E.g. %t/js/custom.js'),
+    '#type' => 'textarea',
+    '#default_value' => html_entity_decode(implode('&#13;&#10;', $campaign['assets']['css'])),
+    '#element_validate' => array('campaign_assets_validate'),
+  );
+  $form['campaign']['assets']['js'] = array(
+    '#title' => t('Additional JavaScript'),
+    '#description' => t('Put each file on a separate line, relative to the Drupal root directory. %t will be expanded into the theme path. E.g. %t/css/custom.css'),
+    '#type' => 'textarea',
+    '#default_value' => html_entity_decode(implode('&#13;&#10;', $campaign['assets']['js'])),
+    '#element_validate' => array('campaign_assets_validate'),
+  );
+
   // $form['campaign']['tokens'] = array(
   //   '#theme' => 'token_tree',
   //   '#token_types' => 'all',
   //   '#weight' => 999,
   //   '#dialog' => TRUE,
   // );
+}
+
+function campaign_assets_validate($element, &$form_state) {
+  if (!empty($element['#value'])) {
+    $value = explode("\n", str_replace("\r", "", $element['#value']));
+    form_set_value($element, $value, $form_state);
+  }
 }
 
 /**
