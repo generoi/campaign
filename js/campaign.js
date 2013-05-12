@@ -6,6 +6,8 @@
   if (/^(app_runner|iframe_canvas)/.test(window.name || '')) {
     $('html').addClass('facebook');
     isFacebook = true; // Drupal.settings doesn't exist yet.
+  } else {
+    $('html').addClass('not-facebook');
   }
 
   // socialite.facebook.js in the social module takes care of initializing
