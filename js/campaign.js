@@ -30,7 +30,7 @@
   Drupal.behaviors.campaign = {
     attach: function(context, settings) {
       Drupal.campaign.attachEvents();
-      if (isFacebook) Drupal.campaign.executeQueue();
+      Drupal.campaign.executeQueue();
     }
   };
 
@@ -67,9 +67,13 @@
     }
     for (var i = 0, l = dialogs.length; i < l; i++) {
       var obj = dialogs[i];
-      Drupal.campaign.run(function() {
-        this.ui(obj);
-      });
+      if (isFacebook) {
+        Drupal.campaign.run(function() {
+          this.ui(obj);
+        });
+      } else {
+        console && console.log && console.log('Display dialog', obj);
+      }
     }
     window.dialogs = [];
   };
@@ -98,8 +102,8 @@
     // Default to webform.
     if (!$el) $el = $('.webform-client-form');
 
-    // @TODO what about checkboxes and radios?
-    $el.find('.description').each(function() {
+    // @TODO textarea not tested.
+    $el.find('input + .description').each(function() {
       var $this = $(this).hide()
         , text = $this.text()
         , $input = $this.prev('input');
