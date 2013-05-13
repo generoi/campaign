@@ -23,7 +23,7 @@
   });
 
   // Load facebook network even on pages with widgets.
-  if (!Socialite.networkReady('facebook')) {
+  if (window.Socialite && !window.Socialite.networkReady('facebook')) {
     Socialite.appendNetwork(Socialite.networks.facebook);
   }
 
