@@ -92,7 +92,7 @@ question and if correct, randomly selects X winners per day.
 3. Add an additional textfield-component to contain the correct question
    value.
    - Set the default value to the key of the select alternative
-   - Make the component private and inactive.
+   - Make the component inactive (NOT private!).
    - Also hide the label.
 
 4. Finally go to "Form settings"
