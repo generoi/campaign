@@ -71,9 +71,8 @@
         Drupal.campaign.run(function() {
           this.ui(obj);
         });
-      } else {
-        console && console.log && console.log('Display dialog', obj);
       }
+      console && console.log && console.log('Display dialog', obj);
     }
     window.dialogs = [];
   };
