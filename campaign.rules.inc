@@ -12,14 +12,14 @@ function campaign_rules_action_info() {
     'named parameter' => TRUE,
     'parameter' => array(
       'picture' => array(
-        'type' => 'uri',
+        'type' => 'text',
         'label' => t('Picture'),
         'description' => t('The URL of a picture attached to this post. The picture must be at least 50px by 50px (though minimum 200px by 200px is preferred) and have a maximum aspect ratio of 3:1'),
-        'translatable' => TRUE,
         'optional' => TRUE,
+        'translatable' => TRUE,
       ),
       'link' => array(
-        'type' => 'uri',
+        'type' => 'text',
         'label' => t('Link path'),
         'description' => t('The link attached to this post.'),
         'translatable' => TRUE,
@@ -57,14 +57,14 @@ function campaign_rules_action_info() {
     'named parameter' => TRUE,
     'parameter' => array(
       'picture' => array(
-        'type' => 'uri',
+        'type' => 'text',
         'label' => t('Picture'),
         'description' => t('By default a picture will be taken from the link specified. The URL of a picture to include in the message. The picture will be shown next to the link.'),
         'optional' => TRUE,
         'translatable' => TRUE,
       ),
       'link' => array(
-        'type' => 'uri',
+        'type' => 'text',
         'label' => t('Link path'),
         'description' => t('The link to send in the message.'),
         'translatable' => TRUE,
