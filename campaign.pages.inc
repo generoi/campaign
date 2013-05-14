@@ -15,8 +15,10 @@ function campaign_fb_redirect($context) {
  * Act as a gateway redirecting the user to the correct page depending on the
  * signed request posted by facebook.
  *
- * 1. User arrives via direct link, renders pre-like and redirects to canvas
- * page with JavaScript. This way Google gets the og:data.
+ * 1. User arrives via direct link
+ * 1.1 Desktop: Renders pre-like and redirects to canvas page with JavaScript.
+ * This way Google gets the og:data.
+ * 1.2. Mobile: Redirect directly to after-like (@see http://goo.gl/Hmch8).
  * 2. User arrives via Canvas page (eg. apps.facebook.com/ID), renders pre-like
  * and redirects to page tab with JavaScript.
  * 3. User arrives at page tab and has liked the page, renders post-like page.
@@ -32,13 +34,22 @@ function campaign_gateway($namespace, $config) {
   require_once DRUPAL_ROOT . '/includes/common.inc';
   // Using url() requires path.inc which is loaded in DRUPAL_BOOTSTRAP_FULL.
   require_once DRUPAL_ROOT . '/' . variable_get('path_inc', 'includes/path.inc');
+  require_once DRUPAL_ROOT . '/sites/all/libraries/Mobile-Detect/Mobile_Detect.php';
 
   $query = NULL;
   $data = campaign_get_signed_request($config['fb']['appid'], $config['fb']['secret']);
+  $detect = new Mobile_Detect();
   // (1) The visitor is coming from a direct link, redirect to pre-like and canvas page.
   if (empty($data)) {
-    $data['page']['liked'] = 0;
-    $query = array('js_redirect' => url('//apps.facebook.com/' . $namespace, array('external' => TRUE)));
+    // (1.1) Desktop, redirect to apps.facebook.com with javascript
+    if (!($detect->isMobile() || $detect->isTablet())) {
+      $data['page']['liked'] = 0;
+      $query = array('js_redirect' => url('//apps.facebook.com/' . $namespace, array('external' => TRUE)));
+    }
+    // (1.2) Mobile, redirect to after-like.
+    else {
+      $data['page']['liked'] = 1;
+    }
   }
   // (2) The visitor is on the canvas page, redirect to pre-like and page tab.
   // We do this with JavaScript so we can use window.top and redirect not only
