@@ -11,6 +11,10 @@ function campaign_fb_redirect($context) {
   drupal_goto(campaign_get_gateway_path($context->name));
 }
 
+function campaign_force_redirect() {
+  drupal_goto($_GET['redirect']);
+}
+
 /**
  * Act as a gateway redirecting the user to the correct page depending on the
  * signed request posted by facebook.

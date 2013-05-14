@@ -38,6 +38,11 @@ function campaign_permission() {
  * Implements hook_menu().
  */
 function campaign_menu() {
+  $items['redirect'] = array(
+    'page callback' => 'campaign_force_redirect',
+    'access arguments' => array('access content'),
+    'file' => 'campaign.pages.inc',
+  );
   $items['fb/%context'] = array(
     'page callback' => 'campaign_fb_redirect',
     'page arguments' => array(1),
@@ -142,7 +147,7 @@ function campaign_page_build() {
     // it as early as possible to avoid unnecessary loading on the client side.
     $js_redirect = array(
       '#type' => 'markup',
-      '#markup' => "<script>(function(a){if(a)window.top.location=a;})(decodeURIComponent((/js_redirect=([^&]+)/.exec(window.location.search) || [,''])[1].replace(/\+/g,' ')));</script>",
+      '#markup' => "<script>(function(a){if(a)window.top.location='https://'+window.location.host+'/redirect/?redirect='+encodeURIComponent(a);})(decodeURIComponent((/js_redirect=([^&]+)/.exec(window.location.search) || [,''])[1].replace(/\+/g,' ')));</script>",
       '#weight' => -1,
     );
     drupal_add_html_head($js_redirect, 'js_redirect');
