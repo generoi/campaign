@@ -59,6 +59,13 @@ function campaign_gateway($namespace, $config) {
     $query = array('js_redirect' => $config['fb']['tab']);
   }
 
+  // IE8.0 renders a blank screen while on Facebook, for now we redirect IE8
+  // users to the website.
+  // @FIXME
+  if ($detect->version('MSIE') == '8.0') {
+    $query = array('js_redirect' => url($config['config']['postlike'], array('external' => TRUE)));
+  }
+
   // @TODO for some rason, url() does not prepend the language prefix.
   global $language;
   $prefix = !empty($language->prefix) ? $language->prefix . '/' : '';
