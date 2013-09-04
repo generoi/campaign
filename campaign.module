@@ -307,12 +307,12 @@ function campaign_preprocess_html(&$variables) {
 
     // Include assets.
     if(isset($campaign['assets']['css']) && count($campaign['assets']['css'])){
-      @foreach ($campaign['assets']['css'] as $css) {
+      foreach ($campaign['assets']['css'] as $css) {
         drupal_add_css(str_replace('%t', path_to_theme(), $css));
       }
     }
     if(isset($campaign['assets']['js']) && count($campaign['assets']['js'])){
-      @foreach ($campaign['assets']['js'] as $js) {
+      foreach ($campaign['assets']['js'] as $js) {
         drupal_add_js(str_replace('%t', path_to_theme(), $js));
       }
     }
