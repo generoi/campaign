@@ -1,0 +1,12 @@
+.campaign_banner-image-filename {
+  max-width: 250px;
+  margin-right: 1em;
+  float: left;
+  clear: left;
+}
+.campaign_banner-image-filename + div {
+  float: left;
+}
+.campaign_banner-add_more {
+  clear: left;
+}

@@ -152,7 +152,6 @@ function campaign_summary($context) {
     $summary[] = array('Related views', implode(', ', $views));
   }
 
-
   drupal_alter('campaign_summary', $summary, $context);
   return theme('table', array(
     'rows' => $summary,

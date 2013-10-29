@@ -1,0 +1,6 @@
+name = Campaign Banner
+description = Add blog banners as a feature to a campaign
+dependencies[] = campaign
+package = custom
+core = 7.x
+

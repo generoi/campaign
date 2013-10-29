@@ -1,0 +1,154 @@
+<?php
+
+
+define('CAMPAIGN_BANNER_UPLOAD_DIR', 'public://blog_banner/');
+
+
+/**
+ * Implements hook_campaign_config_info().
+ */
+function campaign_banner_campaign_config_info() {
+  return array(
+    'blog_banner' => array(
+      'href' => NULL,
+      'alt' => NULL,
+      'images' => array(),
+    ),
+  );
+}
+
+/**
+ * Implements hook_campaign_edit_form_alter().
+ */
+function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespace, $campaign) {
+  if (empty($form_state['num_blog_banners'])) {
+    // Add an extra field below existing banners.
+    if (!empty($campaign['blog_banner']['images'])) {
+      $form_state['num_blog_banners'] = count($campaign['blog_banner']['images']) + 1;
+    } else {
+      $form_state['num_blog_banners'] = 1;
+    }
+  }
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'campaign_banner') . '/campaign_banner.css',
+  );
+
+  $form['campaign']['blog_banner'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Blog Banner'),
+    '#collapsible' => TRUE,
+    '#collapsed' => $form_state['num_blog_banners'] <= 1,
+    '#tree' => TRUE,
+    '#access' => user_access('administer campaigns'),
+    '#weight' => 55,
+    '#prefix' => '<div id="blog_banners-fieldset-wrapper">',
+    '#suffix' => '</div>',
+  );
+  $form['campaign']['blog_banner']['href'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Link address'),
+    '#description' => t('The path to link banners to. E.g. @url', array('@url' => url('<front>', array('absolute' => TRUE)))),
+    '#maxlength' => 255,
+    '#default_value' => $campaign['blog_banner']['href'],
+  );
+  $form['campaign']['blog_banner']['alt'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Alternative text'),
+    '#description' => t('The alternative text for the banner image. Note! The alternative text specified per image basis will not be used.'),
+    '#maxlength' => 255,
+    '#default_value' => $campaign['blog_banner']['alt'],
+  );
+
+  for ($i = 1; $i <= $form_state['num_blog_banners']; $i++) {
+    $form['campaign']['blog_banner']['images'][$i - 1]['filename'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Filename'),
+      '#description' => t('Specify what filename to use. Eg. banner-200x100.png.'),
+      '#maxlength' => 255,
+      '#default_value' => isset($campaign['blog_banner']['images'][$i - 1]['filename']) ? $campaign['blog_banner']['images'][$i - 1]['filename'] : '',
+      '#prefix' => '<div class="campaign_banner-image-filename">',
+      '#suffix' => '</div>',
+    );
+    $form['campaign']['blog_banner']['images'][$i - 1]['file'] = array(
+      '#type' => 'managed_file',
+      '#title' => t('Image'),
+      '#description' => t('Only png allowed.'),
+      '#default_value' => isset($campaign['blog_banner']['images'][$i - 1]['file']) ? $campaign['blog_banner']['images'][$i - 1]['file'] : NULL,
+      // @TODO use variable module
+      '#upload_location' => variable_get('campaign_banner_upload_location', CAMPAIGN_BANNER_UPLOAD_DIR),
+      '#upload_validators' => array(
+        // @TODO For now only png is allowed due to banner.php script.
+        'file_validate_extensions' => array('png'),
+      ),
+    );
+  }
+
+  // Store the original images used so we can compare and delete
+  $form_state['original_blog_banner_images'] = $campaign['blog_banner']['images'];
+
+  $form['campaign']['blog_banner']['add_image'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add another banner image'),
+    '#submit' => array('campaign_banner_add_one'),
+    '#ajax' => array(
+      'callback' => 'campaign_banner_add_more_callback',
+      'wrapper' => 'blog_banners-fieldset-wrapper',
+    ),
+    '#prefix' => '<div class="campaign_banner-add_more">',
+    '#suffix' => '</div>',
+  );
+}
+
+function campaign_banner_add_one($form, &$form_state) {
+  $form_state['num_blog_banners']++;
+  $form_state['rebuild'] = TRUE;
+}
+
+function campaign_banner_add_more_callback($form, $form_state) {
+  return $form['campaign']['blog_banner'];
+}
+
+/**
+ * Implements hook_campaign_save_alter().
+ */
+function campaign_banner_campaign_save_alter($form, $form_state, &$context) {
+  $campaign = &$context->reactions['campaign_context_reaction']['campaign'];
+
+  // Remove submit buttons value.
+  unset($campaign['blog_banner']['add_image']);
+
+  foreach ($form_state['values']['campaign']['blog_banner']['images'] as $idx => $image) {
+    if (empty($image['file'])) {
+      unset($campaign['blog_banner']['images'][$idx]);
+
+      // If a file was removed, delete it.
+      if (isset($form_state['original_blog_banner_images'][$idx]['file'])) {
+        $file = file_load($form_state['original_blog_banner_images'][$idx]['file']);
+        file_usage_delete($file, 'campaign', 'campaign', 1);
+        file_delete($file);
+      }
+      continue;
+    }
+
+    $file = file_load($image['file']);
+    $filepath = variable_get('campaign_banner_upload_location', CAMPAIGN_BANNER_UPLOAD_DIR) . $image['filename'];
+
+    $is_new = $file->status != FILE_STATUS_PERMANENT;
+    $is_rename = $file->uri != $filepath;
+
+    if ($is_new) {
+      $file->status = FILE_STATUS_PERMANENT;
+    }
+    if ($is_rename) {
+      // Rename the file and move it to the new path.
+      $file->filename = $image['filename'];
+      $file = file_move($file, $filepath, FILE_EXISTS_REPLACE);
+    }
+    if ($is_new) {
+      file_usage_add($file, 'campaign', 'campaign', 1);
+      // $campaign['blog_banner']['images'][$idx]['file'] = $file->fid;
+    }
+  }
+  // Reindex array
+  $campaign['blog_banner']['images'] = array_values($campaign['blog_banner']['images']);
+}
