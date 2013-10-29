@@ -297,9 +297,9 @@ function campaign_context_add_form_submit($form, &$form_state) {
  */
 function campaign_context_edit_form($form, &$form_state, $context) {
   $form_state['campaign']['context'] = $context;
-  $form = array();
+  // $form = array();
 
-  campaign_campaign_form($form, $context->name, $context->reactions['campaign_context_reaction']['campaign']);
+  campaign_campaign_edit_form($form, $form_state, $context->name, $context->reactions['campaign_context_reaction']['campaign']);
 
   $form['path'] = array(
     '#title' => t('Path'),

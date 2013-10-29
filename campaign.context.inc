@@ -4,12 +4,14 @@ class campaign_context_reaction extends context_reaction {
 
   function options_form($context) {
     $form = array();
+    $form_state = array();
     // Load the previously saved settings.
     $data = $this->fetch_from_context($context);
     if (!isset($data['campaign'])) {
       $data['campaign'] = array();
     }
-    campaign_campaign_form($form, $context->name, $data['campaign']);
+    // @TODO form_state wont work for AJAX add more fields.
+    campaign_campaign_edit_form($form, $form_state, $context->name, $data['campaign']);
 
     // $form['campaign']['tokens']['#token_types'] = 'all';
 

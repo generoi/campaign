@@ -343,9 +343,9 @@ function campaign_social_facebook_defaults_alter(&$settings) {
 }
 
 /**
- * Return the campaign form.
+ * Return the campaign edit form.
  */
-function campaign_campaign_form(array &$form, $namespace, $campaign) {
+function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $campaign) {
   // The gateway path for this namespace, used for default values.
   $gateway_path = campaign_get_gateway_path($namespace);
   campaign_load_defaults($campaign);
@@ -460,6 +460,8 @@ function campaign_campaign_form(array &$form, $namespace, $campaign) {
     '#default_value' => html_entity_decode(implode('&#13;&#10;', $campaign['assets']['js'])),
     '#element_validate' => array('campaign_assets_validate'),
   );
+
+  drupal_alter('campaign_edit_form', $form, $form_state, $namespace, $campaign);
 
   // $form['campaign']['tokens'] = array(
   //   '#theme' => 'token_tree',
