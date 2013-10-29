@@ -124,6 +124,29 @@ function campaign_context_registry() {
 }
 
 /**
+ * Implements hook_campaign_config_info().
+ */
+function campaign_campaign_config_info() {
+  return array(
+    'fb' => array(
+      'appid' => NULL,
+      'secret' => NULL,
+      'tab' => NULL,
+      'status' => FALSE,
+    ),
+    'config' => array(
+      'prelike' => NULL,
+      'postlike' => NULL,
+      'langcode' => NULL,
+    ),
+    'assets' => array(
+      'css' => array(),
+      'js' => array(),
+    ),
+  );
+}
+
+/**
  * Implements hook_context_page_reaction().
  */
 function campaign_context_page_reaction() {
@@ -210,26 +233,26 @@ function campaign_get_signed_request($appid, $secret) {
 }
 
 /**
+ * Discover all campaign configurations available by invoking
+ * hook_campaign_config_info().
+ */
+function campaign_config_list($config, $reset = FALSE) {
+  $cache = &drupal_static(__FUNCTION__);
+  if (!isset($cache) || $reset) {
+    $cache = module_invoke_all('campaign_config_info');
+    drupal_alter('campaign_config_info', $cache);
+  }
+  drupal_array_merge_deep($cache, $config);
+
+  // See module_implements() for an explanation of this cast.
+  return (array) $cache;
+}
+
+/**
  * Prepare a settings object containing all required keys.
  */
-function campaign_load_defaults(&$campaign, $defaults = array()) {
-  $defaults = drupal_array_merge_deep(array(
-    'fb' => array(
-      'appid' => NULL,
-      'secret' => NULL,
-      'tab' => NULL,
-      'status' => FALSE,
-    ),
-    'config' => array(
-      'prelike' => NULL,
-      'postlike' => NULL,
-      'langcode' => NULL,
-    ),
-    'assets' => array(
-      'css' => array(),
-      'js' => array(),
-    ),
-  ), $defaults);
+function campaign_load_defaults(&$campaign, $defaults = array(), $reset = FALSE) {
+  $defaults = campaign_config_list($defaults, $reset);
 
   foreach ($defaults as $key => $default) {
     if (!isset($campaign[$key])) {
