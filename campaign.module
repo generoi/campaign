@@ -471,6 +471,9 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
   // );
 }
 
+/**
+ * Normalize line endings for assets text area.
+ */
 function campaign_assets_validate($element, &$form_state) {
   if (!empty($element['#value'])) {
     $value = explode("\n", str_replace("\r", "", $element['#value']));

@@ -44,7 +44,7 @@ class campaign_context_reaction extends context_reaction {
         $output['contexts'] = $instance_names;
         $instance = 'context:' . implode(',', $instance_names);
         // Allow altering
-        drupal_alter('campaign_campaign_view', $output, $instance);
+        drupal_alter('campaign_view', $output, $instance);
       }
     }
   }
