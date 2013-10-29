@@ -372,8 +372,11 @@ function campaign_context_edit_form_submit($form, &$form_state) {
   $paths = explode("\n", str_replace("\r", "", $form_state['values']['path']));
   $paths = array_combine($paths, $paths);
   $context->conditions['path']['values'] = $paths;
-  context_save($context);
+
   $form_state['redirect'] = 'admin/config/campaigns';
+
+  drupal_alter('campaign_save', $form, $form_state, $context);
+  context_save($context);
 }
 
 function campaign_context_delete_form($form, &$form_state, $context) {
