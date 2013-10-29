@@ -329,15 +329,11 @@ function campaign_preprocess_html(&$variables) {
     }
 
     // Include assets.
-    if(isset($campaign['assets']['css']) && is_array($campaign['assets']['css']) && count($campaign['assets']['css'])){
-      foreach ($campaign['assets']['css'] as $css) {
-        drupal_add_css(str_replace('%t', path_to_theme(), $css));
-      }
+    foreach ($campaign['assets']['css'] as $css) {
+      drupal_add_css(str_replace('%t', path_to_theme(), $css));
     }
-    if(isset($campaign['assets']['js']) && is_array($campaign['assets']['js']) && count($campaign['assets']['js'])){
-      foreach ($campaign['assets']['js'] as $js) {
-        drupal_add_js(str_replace('%t', path_to_theme(), $js));
-      }
+    foreach ($campaign['assets']['js'] as $js) {
+      drupal_add_js(str_replace('%t', path_to_theme(), $js));
     }
   }
 }
@@ -474,14 +470,12 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
     '#description' => t('Put each file on a separate line, relative to the Drupal root directory. %t will be expanded into the theme path. E.g. %t/js/custom.js'),
     '#type' => 'textarea',
     '#default_value' => html_entity_decode(implode('&#13;&#10;', $campaign['assets']['css'])),
-    '#element_validate' => array('campaign_assets_validate'),
   );
   $form['campaign']['assets']['js'] = array(
     '#title' => t('Additional JavaScript'),
     '#description' => t('Put each file on a separate line, relative to the Drupal root directory. %t will be expanded into the theme path. E.g. %t/css/custom.css'),
     '#type' => 'textarea',
     '#default_value' => html_entity_decode(implode('&#13;&#10;', $campaign['assets']['js'])),
-    '#element_validate' => array('campaign_assets_validate'),
   );
 
   drupal_alter('campaign_edit_form', $form, $form_state, $namespace, $campaign);
@@ -492,16 +486,6 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
   //   '#weight' => 999,
   //   '#dialog' => TRUE,
   // );
-}
-
-/**
- * Normalize line endings for assets text area.
- */
-function campaign_assets_validate($element, &$form_state) {
-  if (!empty($element['#value'])) {
-    $value = explode("\n", str_replace("\r", "", $element['#value']));
-    form_set_value($element, $value, $form_state);
-  }
 }
 
 /**

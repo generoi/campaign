@@ -368,6 +368,11 @@ function campaign_context_edit_form($form, &$form_state, $context) {
  */
 function campaign_context_edit_form_submit($form, &$form_state) {
   $context = $form_state['campaign']['context'];
+
+  // Store assets as arrays
+  $form_state['values']['campaign']['assets']['css'] = explode("\n", str_replace("\r", "", $form_state['values']['campaign']['assets']['css']));
+  $form_state['values']['campaign']['assets']['js'] = explode("\n", str_replace("\r", "", $form_state['values']['campaign']['assets']['js']));
+
   $context->reactions['campaign_context_reaction']['campaign'] = $form_state['values']['campaign'];
   $paths = explode("\n", str_replace("\r", "", $form_state['values']['path']));
   $paths = array_combine($paths, $paths);
