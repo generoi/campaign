@@ -363,8 +363,17 @@ function campaign_social_facebook_defaults_alter(&$settings) {
     'autogrow' => TRUE,
     'scrollTop' => TRUE,
   );
+
   if (isset($campaign['config'])) {
     $config += $campaign['config'];
+  }
+
+  // Add all remaining campaign configuration to the settings object.
+  foreach ($campaign as $key => $data) {
+    if (in_array($key, array('fb', 'config', 'assets'))) {
+      continue;
+    }
+    $config += array($key => $data);
   }
   drupal_add_js(array('campaign' => $config), 'setting');
 }
