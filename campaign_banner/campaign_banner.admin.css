@@ -10,3 +10,14 @@
 .campaign_banner-add_more {
   clear: left;
 }
+.html-snippet-wrapper {
+  display: block;
+  clear: both;
+}
+.html-snippet-wrapper textarea {
+  margin-top: 1em;
+  font-size: 10px;
+  width: 100%;
+  max-width: 500px;
+  height: 100px;
+}
