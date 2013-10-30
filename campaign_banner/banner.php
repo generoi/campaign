@@ -33,7 +33,7 @@ class DB {
 }
 
 $image = isset($_GET['image']) ? $_GET['image'] : NULL;
-$campaign = isset($_GET['campaign']) ? $_GET['image'] : NULL;
+$campaign = isset($_GET['campaign']) ? $_GET['campaign'] : NULL;
 $ref = isset($_GET['ref']) ? $_GET['ref'] : NULL;
 
 if (!isset($image) || !isset($campaign)) {
