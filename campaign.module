@@ -93,6 +93,22 @@ function campaign_ctools_plugin_api($owner, $api) {
 }
 
 /**
+ * Implements hook_hook_info().
+ */
+function campaign_hook_info() {
+  $hooks = array(
+    'campaign_summary_alter',
+    'campaign_edit_form_alter',
+    'campaign_save_alter',
+    'campaign_view_alter',
+    'campaign_config_info',
+    'campaign_config_info_alter',
+    'campaign_graph_data_alter',
+  );
+  return array_fill_keys($hooks, array('group' => 'campaign'));
+}
+
+/**
  * Implements hook_context_plugins().
  */
 function campaign_context_plugins() {
