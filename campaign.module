@@ -337,11 +337,13 @@ function campaign_preprocess_html(&$variables) {
     }
 
     // Include assets.
-    foreach ($campaign['assets']['css'] as $css) {
-      drupal_add_css(str_replace('%t', path_to_theme(), $css));
-    }
-    foreach ($campaign['assets']['js'] as $js) {
-      drupal_add_js(str_replace('%t', path_to_theme(), $js));
+    foreach (array('css', 'js') as $type) {
+      foreach ($campaign['assets'][$type] as $file) {
+        if (!empty($file)) {
+          $fn = "drupal_add_$type";
+          $fn(str_replace('%t', path_to_theme(), $file));
+        }
+      }
     }
   }
 }
