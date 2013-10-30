@@ -17,7 +17,7 @@ function campaign_overview() {
       continue;
     }
     // Get the configurations and output them as a summary table.
-    $configs = $context->reactions['campaign_context_reaction']['campaign'];
+    $configs = campaign_get_from_context($context);
     $fb_data = campaign_get_graph_app($configs['fb']['appid']);
 
     $details = '<div class="campaign-config-label collapsed"><a href="#" class="toggle-details">' . check_plain($context->name) . '</a></div>';
@@ -99,7 +99,7 @@ function campaign_overview() {
  * Output a table summarizing e campaign context.
  */
 function campaign_summary($context) {
-  $configs = $context->reactions['campaign_context_reaction']['campaign'];
+  $configs = campaign_get_from_context($context);
   $languages = language_list();
   $langcode = $configs['config']['langcode'];
   $language = $languages[$langcode];
@@ -297,8 +297,8 @@ function campaign_context_add_form_submit($form, &$form_state) {
 function campaign_context_edit_form($form, &$form_state, $context) {
   $form_state['campaign']['context'] = $context;
   // $form = array();
-
-  campaign_campaign_edit_form($form, $form_state, $context->name, $context->reactions['campaign_context_reaction']['campaign']);
+  $campaign = campaign_get_from_context($context);
+  campaign_campaign_edit_form($form, $form_state, $context->name, $campaign);
 
   $form['path'] = array(
     '#title' => t('Path'),

@@ -32,10 +32,10 @@ class campaign_context_reaction extends context_reaction {
       $contexts = context_active_contexts();
 
       foreach ($contexts as $context) {
-        if (!empty($context->reactions['campaign_context_reaction']['campaign'])) {
+        if (campaign_get_from_context($context)) {
           // Allows multiple contexts to create a merged object. This should
           // be used with care.
-          $output = drupal_array_merge_deep($output, $context->reactions['campaign_context_reaction']['campaign']);
+          $output = drupal_array_merge_deep($output, campaign_get_from_context($context));
           $instance_names[] = $context->name;
         }
       }
