@@ -5,7 +5,7 @@ define('DRUPAL_ROOT', realpath(__DIR__ . '/../../../../../..'));
 
 // Read $databases from drupal settings.
 require_once DRUPAL_ROOT . '/sites/default/settings.php';
-// Read CAMPAIGN_BANNER_UPLOAD_DIR
+// Read CAMPAIGN_BANNER_UPLOAD_DIR, CAMPAIGN_BANNER_ID
 require_once __DIR__ . '/campaign_banner.module';
 
 class DB {
@@ -22,13 +22,13 @@ class DB {
     $this->db = new PDO("mysql:host=$host;dbname=$path", $user, $pass);
   }
 
-  function increment($ref) {
-    $sth = $this->db->prepare("INSERT INTO $this->table (hits, ref) VALUES (1, :ref) ON DUPLICATE KEY UPDATE hits = hits + 1");
-    return $sth->execute(array(':ref' => $ref));
-  }
-
-  function count() {
-    return $this->db->query("SELECT COUNT(*) FROM $this->table")->fetchColumn();
+  function increment($ref, $campaign) {
+    $sth = $this->db->prepare("INSERT INTO $this->table (hits, ref, campaign, type, updated) VALUES (1, :ref, :campaign, :type, UNIX_TIMESTAMP()) ON DUPLICATE KEY UPDATE hits = hits + 1");
+    return $sth->execute(array(
+      ':ref' => $ref,
+      ':campaign' => $campaign,
+      ':type' => CAMPAIGN_BANNER_ID,
+    ));
   }
 }
 
@@ -51,7 +51,7 @@ $mimetypes = array(
 
 if (isset($ref)) {
   $db = new DB($databases);
-  $db->increment($ref);
+  $db->increment($ref, $campaign);
 }
 
 header('Content-Type: ' . $mimetypes[$extension]);

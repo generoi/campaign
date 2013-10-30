@@ -1,6 +1,7 @@
 name = Campaign Banner
 description = Add blog banners as a feature to a campaign
 dependencies[] = campaign
+dependencies[] = campaign_counter
 package = custom
 core = 7.x
 

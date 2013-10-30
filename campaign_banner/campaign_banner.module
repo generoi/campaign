@@ -2,6 +2,7 @@
 
 define('CAMPAIGN_BANNER_UPLOAD_DIR', 'public://blog_banner/');
 define('CAMPAIGN_BANNER_SCRIPT', 'banner.php');
+define('CAMPAIGN_BANNER_ID', 'campaign_banner');
 
 function campaign_banner_init() {
   // The page where users select their banner is not necessarily in the campaign
@@ -134,12 +135,12 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
 
 function campaign_banner_campaign_summary_alter(&$summary, $context) {
   $campaign = campaign_get_from_context($context);
-  $image_list = array();
-  foreach ($campaign['blog_banner']['images'] as $image) {
-    $file = file_load($image['file']);
-    $image_list[] = l($image['filename'], file_create_url($file->uri));
-  }
-  $summary[] = array(t('Blog Banner'), $campaign['blog_banner']['active'] ? t('Active: !images', array('!images' => implode(', ', $image_list))) : t('Inactive'));
+  $active = t('Active: !link', array(
+    '!link' => l(t('Display counter'), 'admin/config/campaigns/campaign-counters', array(
+      'query' => array('campaign' => $context->name, 'type' => CAMPAIGN_BANNER_ID)
+    )),
+  ));
+  $summary[] = array(t('Blog Banner'), !empty($campaign['blog_banner']['active']) ? $active : t('Inactive'));
 }
 
 /**
