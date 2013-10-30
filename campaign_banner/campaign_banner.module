@@ -115,7 +115,7 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
   $form['campaign']['blog_banner']['html_snippet'] = array(
     '#markup' => '<div class="html-snippet-wrapper"><hr>'
       . '<textarea id="campaign_banner-html_snippet">' . htmlspecialchars($html_snippet) . '</textarea>'
-      . '<p>' . t('Copy the following snippet into your page source. Feel free to rearrange within the wrapping %el', array('%el' => '<div>')) . '</p>'
+      . '<p>' . t('Copy the following snippet into your page source. Feel free to rearrange within the wrapping %el. You need to save this form before copying the snippet!', array('%el' => '<div>')) . '</p>'
       . '</div>',
   );
 
@@ -130,6 +130,16 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
     '#prefix' => '<div class="campaign_banner-add_more">',
     '#suffix' => '</div>',
   );
+}
+
+function campaign_banner_campaign_summary_alter(&$summary, $context) {
+  $campaign = campaign_get_from_context($context);
+  $image_list = array();
+  foreach ($campaign['blog_banner']['images'] as $image) {
+    $file = file_load($image['file']);
+    $image_list[] = l($image['filename'], file_create_url($file->uri));
+  }
+  $summary[] = array(t('Blog Banner'), $campaign['blog_banner']['active'] ? t('Active: !images', array('!images' => implode(', ', $image_list))) : t('Inactive'));
 }
 
 /**
