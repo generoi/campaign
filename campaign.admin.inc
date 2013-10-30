@@ -235,7 +235,7 @@ function _campaign_validate_namespace($namespace) {
 
   // Make sure the context doesn't already exist.
   ctools_include('export');
-  if (ctools_export_crud_load('context', $data->namespace)) {
+  if (ctools_export_crud_load('context', $namespace)) {
     // Clear the cache.
     cache_clear_all('campaign_graph:' . $element['#value'], 'cache');
     return t('A context with this same name as the facebook namespace already exists. Please rename it on facebook and try again.');
