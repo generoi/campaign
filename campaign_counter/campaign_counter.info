@@ -1,0 +1,9 @@
+name = Campaign Counter
+description = Hit counter features for campaigns
+dependencies[] = campaign
+dependencies[] = views
+dependencies[] = better_exposed_filters
+package = custom
+core = 7.x
+
+

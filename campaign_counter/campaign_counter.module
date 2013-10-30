@@ -1,0 +1,57 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function campaign_counter_menu() {
+  $items['campaign_counter/unique/%/%'] = array(
+    'page callback' => 'campaign_counter_json',
+    'page arguments' => array(1, 2, 3),
+    'access arguments' => array('access campaign counter json'),
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function campaign_counter_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
+
+/**
+ * Implements hook_permission().
+ */
+function campaign_counter_permission() {
+  return array(
+    'view campaign counters' => array(
+      'title' => t('View Campaign Counters'),
+      'description' => t('Access views of campaign hit counters.'),
+    ),
+    'access campaign counter json' => array(
+      'title' => t('Access Campaign Counter JSON'),
+      'description' => t('Access campaign counter data as JSON'),
+    ),
+  );
+}
+
+/**
+ * JSON service to query campaign counters.
+ */
+function campaign_counter_json($method, $campaign, $type) {
+  $data = new stdClass();
+  switch ($method) {
+    case 'unique':
+      $result = db_select('campaign_counter', 'c')
+        ->fields('c', array('id'))
+        ->condition('campaign', $campaign)
+        ->condition('type', $type)
+        ->execute()
+        ->rowCount();
+      $data->result = $result;
+      break;
+  }
+  drupal_json_output($data);
+}

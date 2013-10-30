@@ -1,0 +1,64 @@
+<?php
+
+/**
+ * Implements hook_uninstall().
+ */
+function campaign_counter_uninstall() {
+  drupal_uninstall_schema('campaign_counter');
+}
+
+/**
+ * Implements hook_schema().
+ */
+function campaign_counter_schema() {
+  $schema['campaign_counter'] = array(
+    'description' => 'The table of misc ongoing counter hits',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Unique key',
+      ),
+      'ref' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'description' => 'Identifying reference',
+      ),
+      // Performance shouldn't be an issue, but mainting banner.php script would be
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'description' => 'Counter type',
+      ),
+      'campaign' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'description' => 'Campaign namespace',
+      ),
+      'hits' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The amount of hits',
+      ),
+      'updated' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The time of the last hit',
+      ),
+    ),
+    'indexes' => array(
+      'updated' => array('updated'),
+    ),
+    'unique keys' => array(
+      'sid' => array('type', 'campaign', 'ref'),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}
+
