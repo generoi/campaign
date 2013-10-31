@@ -100,6 +100,7 @@ function campaign_overview() {
  */
 function campaign_summary($context) {
   $configs = campaign_get_from_context($context);
+  campaign_load_defaults($configs);
   $languages = language_list();
   $langcode = $configs['config']['langcode'];
   $language = $languages[$langcode];
