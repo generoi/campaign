@@ -66,7 +66,7 @@ function campaign_gateway($namespace, $config) {
     $query = array('js_redirect' => url($config['config']['postlike'], array('external' => TRUE)));
   }
 
-  // @TODO for some rason, url() does not prepend the language prefix.
+  // @TODO for some reason, url() does not prepend the language prefix.
   global $language;
   $prefix = !empty($language->prefix) ? $language->prefix . '/' : '';
 

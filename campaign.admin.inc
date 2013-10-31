@@ -115,8 +115,8 @@ function campaign_summary($context) {
     array('Language', $language->name),
     array('Active', $configs['active'] ? t('Yes') : t('No')),
     array('Application ID', $app_id),
-    array('Application Secret', isset($configs['fb']['secret']) ? $configs['fb']['secret'] : t('Not configured')),
-    array('Facebook Tab URL', isset($configs['fb']['tab']) ? l($configs['fb']['tab'], $configs['fb']['tab']) : t('Not configured')),
+    array('Application Secret', $configs['fb']['secret'] ? $configs['fb']['secret'] : t('Not configured')),
+    array('Facebook Tab URL', $configs['fb']['tab'] ? l($configs['fb']['tab'], $configs['fb']['tab']) : t('Not configured')),
     array('Canvas Page', l($canvas_page, $canvas_page)),
     array('Redirect URL', l($redirect_url, $redirect_url)),
   );
@@ -155,9 +155,11 @@ function campaign_summary($context) {
   }
 
   drupal_alter('campaign_summary', $summary, $context);
+
+  $active_class = $configs['active'] ? 'campaign-config-active' : 'campaign-config-inactive';
   return theme('table', array(
     'rows' => $summary,
-    'attributes' => array('class' => array('campaign-config-summary', $configs['active'] ? 'campaign-config-active' : 'campaign-config-inactive')),
+    'attributes' => array('class' => array('campaign-config-summary', $active_class)),
   ));
 }
 
@@ -296,7 +298,6 @@ function campaign_context_add_form_submit($form, &$form_state) {
  */
 function campaign_context_edit_form($form, &$form_state, $context) {
   $form_state['campaign']['context'] = $context;
-  // $form = array();
   $campaign = campaign_get_from_context($context);
   campaign_campaign_edit_form($form, $form_state, $context->name, $campaign);
 
@@ -369,11 +370,18 @@ function campaign_context_edit_form_submit($form, &$form_state) {
   $context = $form_state['campaign']['context'];
 
   // Store assets as arrays
-  $form_state['values']['campaign']['assets']['css'] = explode("\n", str_replace("\r", "", $form_state['values']['campaign']['assets']['css']));
-  $form_state['values']['campaign']['assets']['js'] = explode("\n", str_replace("\r", "", $form_state['values']['campaign']['assets']['js']));
+  foreach (array('css', 'js') as $type) {
+    // Strip windows EOL.
+    $files = explode("\n", str_replace("\r", '', $form_state['values']['campaign']['assets'][$type]));
+    // Trim filenames and remove empty elements.
+    $files = array_filter(array_map('trim', $files));
+    $form_state['values']['campaign']['assets'][$type] = $files;
+  }
 
   $context->reactions['campaign_context_reaction']['campaign'] = $form_state['values']['campaign'];
-  $paths = explode("\n", str_replace("\r", "", $form_state['values']['path']));
+  $paths = explode("\n", str_replace("\r", '', $form_state['values']['path']));
+  // Trim paths and remove empty elements.
+  $paths = array_filter(array_map('trim', $paths));
   $paths = array_combine($paths, $paths);
   $context->conditions['path']['values'] = $paths;
 

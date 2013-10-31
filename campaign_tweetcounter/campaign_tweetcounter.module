@@ -78,7 +78,7 @@ function campaign_tweetcounter_cron() {
   foreach ($campaigns as $namespace) {
     $campaign = campaign_get($namespace);
     // Make sure the campaign is active as well as the tweetcounter feature.
-    if (!empty($campaign['active']) && !empty($campaign['tweetcounter']['active'])) {
+    if ($campaign['active'] && $campaign['tweetcounter']['active']) {
       $trackers[] = array(
         'campaign' => $namespace,
         'hashtags' => $campaign['tweetcounter']['hashtags'],
@@ -137,7 +137,7 @@ function campaign_tweetcounter_sync($tracker) {
 function campaign_tweetcounter_campaign_tweetcounter_sync($namespace, $hashtag, $tweets) {
   $campaign = campaign_get($namespace);
 
-  if (empty($campaign['tweetcounter']['active']) || empty($tweets)) {
+  if (!$campaign['tweetcounter']['active'] || empty($tweets)) {
     return;
   }
   $url = !empty($hashtag['url']) ? $hashtag['url'] : FALSE;
@@ -155,7 +155,7 @@ function campaign_tweetcounter_campaign_tweetcounter_sync($namespace, $hashtag, 
       }
     // Add as participant if no url is tracked.
     } else if (!$url) {
-        $participants++;
+      $participants++;
     }
   }
   watchdog('campaign_tweetcounter', 'Found @count new participants for #@hashtag with url %url for campaign %campaign.', array(

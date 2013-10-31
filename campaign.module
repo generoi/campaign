@@ -252,7 +252,7 @@ function campaign_get_signed_request($appid, $secret) {
 }
 
 /**
- * Return the campaign data from a namespace
+ * Return the campaign data from a namespace.
  */
 function campaign_get($namespace, $reset = FALSE) {
   // Cache not to trigger context_load hooks multiple times.
@@ -281,7 +281,7 @@ function campaign_get_from_context($context) {
 function campaign_list($reset = FALSE) {
   $list = &drupal_static(__FUNCTION__);
 
-  if (!isset($list) || $result) {
+  if (!isset($list) || $reset) {
     $list = db_select('context', 'c')
       ->fields('c', array('name'))
       ->condition('tag', CAMPAIGN_CONTEXT_TAG)
@@ -301,10 +301,10 @@ function campaign_config_list($config, $reset = FALSE) {
     $cache = module_invoke_all('campaign_config_info');
     drupal_alter('campaign_config_info', $cache);
   }
-  drupal_array_merge_deep($cache, $config);
-
   // See module_implements() for an explanation of this cast.
-  return (array) $cache;
+  drupal_array_merge_deep((array) $cache, $config);
+
+  return $cache;
 }
 
 /**
@@ -312,12 +312,8 @@ function campaign_config_list($config, $reset = FALSE) {
  */
 function campaign_load_defaults(&$campaign, $defaults = array(), $reset = FALSE) {
   $defaults = campaign_config_list($defaults, $reset);
-
-  foreach ($defaults as $key => $default) {
-    if (!isset($campaign[$key])) {
-      $campaign[$key] = $default;
-    }
-  }
+  $campaign = drupal_array_merge_deep($defaults, $campaign);
+  return $campaign;
 }
 
 /**
@@ -387,7 +383,7 @@ function campaign_preprocess_html(&$variables) {
       $variables['classes_array'][] = 'after-like';
     }
 
-    // Include assets.
+    // Include assets
     foreach (array('css', 'js') as $type) {
       foreach ($campaign['assets'][$type] as $file) {
         if (!empty($file)) {
@@ -556,13 +552,6 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
   );
 
   drupal_alter('campaign_edit_form', $form, $form_state, $namespace, $campaign);
-
-  // $form['campaign']['tokens'] = array(
-  //   '#theme' => 'token_tree',
-  //   '#token_types' => 'all',
-  //   '#weight' => 999,
-  //   '#dialog' => TRUE,
-  // );
 }
 
 /**

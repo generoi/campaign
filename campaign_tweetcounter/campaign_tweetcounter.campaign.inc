@@ -57,33 +57,33 @@ function campaign_tweetcounter_campaign_edit_form_alter(&$form, &$form_state, $n
     '#title' => t('OAuth access token'),
     '#description' => t('The OAuth access token for the !link.', array('!link' => $twitter_app_link)),
     '#maxlength' => 255,
-    '#default_value' => !empty($campaign['tweetcounter']['oauth_access_token']) ? $campaign['tweetcounter']['oauth_access_token'] : variable_get('campaign_tweetcounter_oauth_access_token', ''),
+    '#default_value' => $campaign['tweetcounter']['oauth_access_token'] ? $campaign['tweetcounter']['oauth_access_token'] : variable_get('campaign_tweetcounter_oauth_access_token', ''),
   );
   $form['campaign']['tweetcounter']['oauth_access_token_secret'] = array(
     '#type' => 'textfield',
     '#title' => t('OAuth access token secret'),
     '#description' => t('The OAuth access token secret for the !link.', array('!link' => $twitter_app_link)),
     '#maxlength' => 255,
-    '#default_value' => !empty($campaign['tweetcounter']['oauth_access_token_secret']) ? $campaign['tweetcounter']['oauth_access_token_secret'] : variable_get('campaign_tweetcounter_oauth_access_token_secret', ''),
+    '#default_value' => $campaign['tweetcounter']['oauth_access_token_secret'] ? $campaign['tweetcounter']['oauth_access_token_secret'] : variable_get('campaign_tweetcounter_oauth_access_token_secret', ''),
   );
   $form['campaign']['tweetcounter']['consumer_key'] = array(
     '#type' => 'textfield',
     '#title' => t('Consumer key'),
     '#description' => t('Consumer key for the !link.', array('!link' => $twitter_app_link)),
     '#maxlength' => 255,
-    '#default_value' => !empty($campaign['tweetcounter']['consumer_key']) ? $campaign['tweetcounter']['consumer_key'] : variable_get('consumer_key', ''),
+    '#default_value' => $campaign['tweetcounter']['consumer_key'] ? $campaign['tweetcounter']['consumer_key'] : variable_get('consumer_key', ''),
   );
   $form['campaign']['tweetcounter']['consumer_secret'] = array(
     '#type' => 'textfield',
     '#title' => t('Consumer secret'),
     '#description' => t('Consumer secret for the !link.', array('!link' => $twitter_app_link)),
     '#maxlength' => 255,
-    '#default_value' => !empty($campaign['tweetcounter']['consumer_secret']) ? $campaign['tweetcounter']['consumer_secret'] : variable_get('consumer_secret', ''),
+    '#default_value' => $campaign['tweetcounter']['consumer_secret'] ? $campaign['tweetcounter']['consumer_secret'] : variable_get('consumer_secret', ''),
   );
 
   $form['campaign']['tweetcounter']['hashtag_help'] = array(
     '#markup' => '<h3>' . t('Hashtags') . '</h3>'
-    . '<p>' . t('Add each hashtag you want the campaign to track. Optionally enter a space separated list of URLs, one of which has to be mentioned to count as a participation. If no URL is specified all tweets will be counted.') . '</p>',
+      . '<p>' . t('Add each hashtag you want the campaign to track. Optionally enter a space separated list of URLs, one of which has to be mentioned to count as a participation. If no URL is specified all tweets will be counted.') . '</p>',
   );
 
   for ($i = 1; $i <= $form_state['num_tweet_counters']; $i++) {
@@ -148,7 +148,7 @@ function campaign_tweetcounter_campaign_summary_alter(&$summary, $context) {
     '!sync' => l(t('Trigger sync now'), 'admin/config/campaigns/tweetcounter/sync/' . $context->name),
     '!hashtags' => '<br />' . implode('<br />', $hashtag_links),
   ));
-  $summary[] = array(t('Tweet Counter'), !empty($campaign['tweetcounter']['active']) ? $active : t('Inactive'));
+  $summary[] = array(t('Tweet Counter'), $campaign['tweetcounter']['active'] ? $active : t('Inactive'));
 }
 
 /**
@@ -160,7 +160,7 @@ function campaign_tweetcounter_campaign_save_alter($form, $form_state, &$context
   unset($campaign['tweetcounter']['add_more']);
   // Store hashtags without the # symbol.
   foreach ($campaign['tweetcounter']['hashtags'] as $idx => $hashtag) {
-    $normalized_hashtag = preg_replace('/^\#/', '', $hashtag['hashtag']);
+    $normalized_hashtag = trim(preg_replace('/^\#/', '', $hashtag['hashtag']));
     $campaign['tweetcounter']['hashtags'][$idx]['hashtag'] = $normalized_hashtag;
     if (empty($normalized_hashtag)) {
       unset($campaign['tweetcounter']['hashtags'][$idx]);

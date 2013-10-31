@@ -4,6 +4,9 @@ define('CAMPAIGN_BANNER_UPLOAD_DIR', 'public://blog_banner/');
 define('CAMPAIGN_BANNER_SCRIPT', 'banner.php');
 define('CAMPAIGN_BANNER_ID', 'campaign_banner');
 
+/**
+ * Implements hook_init().
+ */
 function campaign_banner_init() {
   // The page where users select their banner is not necessarily in the campaign
   // path, therefore this has to be included on every page.
@@ -131,6 +134,9 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
   );
 }
 
+/**
+ * Implements hook_campaign_summary_alter().
+ */
 function campaign_banner_campaign_summary_alter(&$summary, $context) {
   $campaign = campaign_get_from_context($context);
   $active = t('Active: !link', array(
@@ -138,7 +144,7 @@ function campaign_banner_campaign_summary_alter(&$summary, $context) {
       'query' => array('campaign' => $context->name, 'type' => CAMPAIGN_BANNER_ID)
     )),
   ));
-  $summary[] = array(t('Blog Banner'), !empty($campaign['blog_banner']['active']) ? $active : t('Inactive'));
+  $summary[] = array(t('Blog Banner'), $campaign['blog_banner']['active'] ? $active : t('Inactive'));
 }
 
 /**

@@ -52,13 +52,18 @@ $mimetypes = array(
   'gif' => 'image/gif',
 );
 
-if (isset($ref)) {
-  $db = new DB($databases);
-  $db->increment($ref, $campaign);
-}
+if (in_array($extension, $mimetypes) && file_exists($image)) {
+  if (isset($ref)) {
+    $db = new DB($databases);
+    $db->increment($ref, $campaign);
+  }
 
-header('Content-Type: ' . $mimetypes[$extension]);
-header('Content-Length: ' . filesize($image)); // optimization
-$f = fopen($image, 'rb');
-fpassthru($f);
-fclose($f);
+  header('Content-Type: ' . $mimetypes[$extension]);
+  header('Content-Length: ' . filesize($image)); // optimization
+  $f = fopen($image, 'rb');
+  fpassthru($f);
+  fclose($f);
+} else {
+  header('HTTP/1.0 404 Not Found');
+  echo 'File not found';
+}

@@ -66,7 +66,6 @@ function campaign_tweetcounter_get_tweets($oauth, $hashtag, $since_id = FALSE) {
   if (!empty($response->statuses)) {
     $statuses = $response->statuses;
   }
-  // @TODO handle errors
   return $statuses;
 }
 
