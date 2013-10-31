@@ -1,0 +1,193 @@
+<?php
+
+/**
+ * @file campaign_tweetcounter.module
+ * TODO: Enter file description here.
+ */
+
+define('CAMPAIGN_TWEETCOUNTER_API_BASE', 'https://api.twitter.com/1.1');
+define('CAMPAIGN_TWEETCOUNTER_ID', 'tweetcounter');
+
+/**
+ * Implements hook_menu().
+ */
+function campaign_tweetcounter_menu() {
+  $items['admin/config/campaigns/tweetcounter/sync/%context'] = array(
+    'title' => 'Manual tweet fetch run',
+    'page callback' => 'campaign_tweetcounter_sync_page',
+    'page arguments' => array(5),
+    'access arguments' => array('access tweetcounter'),
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function campaign_tweetcounter_permission() {
+  $permissions['access tweetcounter'] = array(
+    'title' => t('Access tweet counters'),
+    'restrict access' => TRUE,
+    'description' => t('Access tweet counter pages and manually trigger synchronization.'),
+  );
+  return $permissions;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function campaign_tweetcounter_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
+
+/**
+ * Manually run a tweet sync.
+ */
+function campaign_tweetcounter_sync_page($context) {
+  $campaign = campaign_get_from_context($context);
+  $content = '';
+  $tracker = array(
+    'campaign' => $context->name,
+    'hashtags' => $campaign['tweetcounter']['hashtags'],
+  );
+  $result = campaign_tweetcounter_sync($tracker);
+  foreach ($result as $hashtag => $tweets) {
+    $content .= '<p>' . t('Found @num new tweets for !hashtag', array(
+      '@num' => count($tweets),
+      '!hashtag' => '#' . $hashtag,
+    )) . '</p>';
+  }
+  return $content;
+}
+
+/**
+ * Implements hook_cron().
+ */
+function campaign_tweetcounter_cron() {
+  $expires = variable_get('campaign_tweetcounter_cron_last_run', REQUEST_TIME);
+  // Only run once per hour
+  if ($expires + 60*60 > REQUEST_TIME) {
+    return;
+  }
+  variable_set('campaign_tweetcounter_cron_last_run', REQUEST_TIME);
+
+  $campaigns = campaign_list();
+  $trackers = array();
+  foreach ($campaigns as $namespace) {
+    $campaign = campaign_get($namespace);
+    // Make sure the campaign is active as well as the tweetcounter feature.
+    if (!empty($campaign['active']) && !empty($campaign['tweetcounter']['active'])) {
+      $trackers[] = array(
+        'campaign' => $namespace,
+        'hashtags' => $campaign['tweetcounter']['hashtags'],
+      );
+    }
+  }
+
+  $queue = DrupalQueue::get('campaign_tweetcounter_track');
+  foreach ($trackers as $tracker) {
+    $queue->createItem($tracker);
+  }
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ */
+function campaign_tweetcounter_cron_queue_info() {
+  $queues['campaign_tweetcounter_track'] = array(
+    'worker callback' => 'campaign_tweetcounter_sync',
+    'time' => 15,
+  );
+}
+
+/**
+ * Sync the tweets by the tracker
+ *
+ * @param array $tracker
+ *  - campaign: campaign namespace
+ *  - hashtags: array of hashtags to sync
+ */
+function campaign_tweetcounter_sync($tracker) {
+  $campaign = $tracker['campaign'];
+  $result = array();
+  module_load_include('inc', 'campaign_tweetcounter');
+  foreach ($tracker['hashtags'] as $hashtag) {
+    if (empty($hashtag['hashtag'])) {
+      continue;
+    }
+    $tweets = _campaign_tweetcounter_fetch_new($hashtag['hashtag'], $campaign);
+    module_invoke_all('campaign_tweetcounter_sync', $campaign, $hashtag, $tweets);
+    $result[$hashtag['hashtag']] = $tweets;
+  }
+  return $result;
+}
+
+/**
+ * Implements hook_campaign_tweetcounter_sync().
+ *
+ * @param string $namespace
+ * @param array $hashtag
+ *  - hashtag
+ *  - url
+ * @param array $tweets
+ *  List of $tweet objects as returned from the twitter API.
+ */
+function campaign_tweetcounter_campaign_tweetcounter_sync($namespace, $hashtag, $tweets) {
+  $campaign = campaign_get($namespace);
+
+  if (empty($campaign['tweetcounter']['active']) || empty($tweets)) {
+    return;
+  }
+  $url = !empty($hashtag['url']) ? $hashtag['url'] : FALSE;
+
+  $participants = 0;
+  // Traverse urls in each tweet and count how many used the url
+  foreach($tweets as $tweet) {
+    if (!empty($tweet->entities->urls)) {
+      foreach ($tweet->entities->urls as $tweet_url) {
+        // Add as participant if the tracked url is mentioned.
+        if (strpos($url, $tweet_url->expanded_url) !== FALSE) {
+          $participants++;
+          break;
+        }
+      }
+    // Add as participant if no url is tracked.
+    } else if (!$url) {
+        $participants++;
+    }
+  }
+  watchdog('campaign_tweetcounter', 'Found @count new participants for #@hashtag with url %url for campaign %campaign.', array(
+    '@count' => $participants,
+    '@hashtag' => $hashtag['hashtag'],
+    '%url' => $hashtag['url'],
+    '%campaign' => $namespace,
+  ), WATCHDOG_INFO);
+
+  // Update the campaign counter with the new tweet count.
+  campaign_counter_increment($namespace, CAMPAIGN_TWEETCOUNTER_ID, $hashtag['hashtag'], $participants);
+}
+
+/**
+ * Implements hook_form_campaign_context_rename_alter().
+ */
+function campaign_tweetcounter_form_campaign_context_rename_form_alter(&$form, &$form_state) {
+  module_load_include('inc', 'campaign_tweetcounter', 'campaign_tweetcounter.campaign');
+  $form['#submit'][] = 'campaign_tweetcounter_rename_submit';
+}
+
+/**
+ * AJAX callback
+ */
+function campaign_tweetcounter_add_one($form, &$form_state) {
+  $form_state['num_tweet_counters']++;
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * AJAX callback
+ */
+function campaign_tweetcounter_add_more_callback($form, $form_state) {
+  return $form['campaign']['tweetcounter'];
+}

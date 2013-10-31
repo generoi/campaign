@@ -1,0 +1,13 @@
+.campaign_tweetcounter-hashtag {
+  max-width: 250px;
+  margin-right: 1em;
+  float: left;
+  clear: left;
+}
+.campaign_tweetcounter-hashtag + div {
+  float: left;
+}
+.campaign_tweetcounter-add_more {
+  clear: left;
+}
+

@@ -1,0 +1,6 @@
+name = Campaign Tweet Counter
+description = Track tweet hashtags for campaigns
+dependencies[] = campaign
+dependencies[] = campaign_counter
+package = custom
+core = 7.x

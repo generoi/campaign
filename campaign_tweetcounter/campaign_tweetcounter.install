@@ -1,0 +1,63 @@
+<?php
+
+/**
+ * Implements hook_uninstall().
+ */
+function campaign_tweetcounter_uninstall() {
+  variable_del('campaign_tweetcounter_cron_last_run');
+  drupal_uninstall_schema('campaign_tweetcounter');
+}
+
+/**
+ * Implements hook_schema().
+ */
+function campaign_tweetcounter_schema() {
+  $schema['campaign_tweetcounter_tweets'] = array(
+    'description' => 'Table of tweets fetched',
+    'fields' => array(
+      'id' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Tweet ID',
+      ),
+      'created' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Time tweet was created',
+      ),
+      'text' => array(
+        'type' => 'varchar',
+        'length' => 140,
+        'description' => 'Tweet text',
+      ),
+      'user' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'User ID',
+      ),
+      'language' => array(
+        'type' => 'varchar',
+        'length' => 3,
+        'description' => 'Users language code',
+      ),
+      'campaign' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'description' => 'Campaign namespace tracking',
+      ),
+      'hashtag' => array(
+        'type' => 'varchar',
+        'length' => 140,
+        'description' => 'Hashtag tracked',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}
