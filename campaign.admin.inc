@@ -142,8 +142,10 @@ function campaign_summary($context) {
     $summary[] = array('Mobile Web', l($postlike, $postlike));
   }
   else {
-    $summary[] = array('Mobile Web', t('Missing after like'));
+    $summary[] = array('Mobile Web', t('Missing after like page'));
   }
+  $inactive_page = $configs['config']['inactive'];
+  $summary[] = array('Inactive page', $inactive_page ? l($inactive_page, $inactive_page, array('language' => $language)) : t('Not configured'));
 
   $rules = _campaign_ui_get_rules_by_tag($context->name);
   if (!empty($rules)) {

@@ -70,8 +70,13 @@ function campaign_gateway($namespace, $config) {
   global $language;
   $prefix = !empty($language->prefix) ? $language->prefix . '/' : '';
 
+  // In case the campaign is inactive and an inactive page is set, redirect to it.
+  // @TODO can we move this up in the flow?
+  if (!empty($config['active']) && !empty($config['config']['inactive'])) {
+    header('Location: ' . url($config['config']['inactive'], array('absolute' => TRUE, 'query' => $query, 'prefix' => $prefix)));
+  }
   // (3) If the user has liked the page, redirect to the configured page.
-  if ($data['page']['liked']) {
+  elseif ($data['page']['liked']) {
     header('Location: ' . url($config['config']['postlike'], array('absolute' => TRUE, 'query' => $query, 'prefix' => $prefix)));
   }
   // (4) If not redirect to the pre-liked page.

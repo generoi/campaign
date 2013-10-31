@@ -157,6 +157,7 @@ function campaign_campaign_config_info() {
       'prelike' => NULL,
       'postlike' => NULL,
       'langcode' => NULL,
+      'inactive' => NULL,
     ),
     'assets' => array(
       'css' => array(),
@@ -404,6 +405,9 @@ function campaign_preprocess_html(&$variables) {
     if (drupal_get_normal_path($campaign['config']['postlike']) == $_GET['q']) {
       $variables['classes_array'][] = 'after-like';
     }
+    if (drupal_get_normal_path($campaign['config']['inactive']) == $_GET['q']) {
+      $variables['classes_array'][] = 'campaign-inactive';
+    }
 
     // Include assets
     foreach (array('css', 'js') as $type) {
@@ -544,6 +548,13 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
     '#description' => t('The path where users who have liked the page will be redirected. You should use node/X paths as these will automatically use the correct HTTP protocol.'),
     '#maxlength' => 255,
     '#default_value' => $campaign['config']['postlike'],
+  );
+  $form['campaign']['config']['inactive'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Inactive page'),
+    '#description' => t('The path where users visiting the after like page will be redirected when the campaign is over. You should use node/X paths as these will automatically use the correct HTTP protocol.'),
+    '#maxlength' => 255,
+    '#default_value' => $campaign['config']['inactive'],
   );
 
   $form['campaign']['assets'] = array(
