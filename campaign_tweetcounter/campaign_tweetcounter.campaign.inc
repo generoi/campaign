@@ -83,7 +83,7 @@ function campaign_tweetcounter_campaign_edit_form_alter(&$form, &$form_state, $n
 
   $form['campaign']['tweetcounter']['hashtag_help'] = array(
     '#markup' => '<h3>' . t('Hashtags') . '</h3>'
-      . '<p>' . t('Add each hashtag you want the campaign to track. Optionally enter a space separated list of URLs, one of which has to be mentioned to count as a participation') . '</p>',
+    . '<p>' . t('Add each hashtag you want the campaign to track. Optionally enter a space separated list of URLs, one of which has to be mentioned to count as a participation. If no URL is specified all tweets will be counted.') . '</p>',
   );
 
   for ($i = 1; $i <= $form_state['num_tweet_counters']; $i++) {
