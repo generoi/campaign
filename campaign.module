@@ -417,13 +417,8 @@ function campaign_social_facebook_defaults_alter(&$settings) {
     $config += $campaign['config'];
   }
 
-  // Add all remaining campaign configuration to the settings object.
-  foreach ($campaign as $key => $data) {
-    if (in_array($key, array('fb', 'config', 'assets'))) {
-      continue;
-    }
-    $config += array($key => $data);
-  }
+  drupal_alter('campaign_js', $config, $campaign);
+
   drupal_add_js(array('campaign' => $config), 'setting');
 }
 

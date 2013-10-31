@@ -86,3 +86,14 @@ function hook_campaign_graph_data_alter($app_id, &$response) {
     $response->data->custom_attribute = 'Custom attribute';
   }
 }
+
+/**
+ * Alter the campaign JS settings object.
+ *
+ * For example moving campaign configurations to the JavaScript space.
+ *
+ * @see campaign_social_facebook_defaults_alter().
+ */
+function hook_campaign_js_alter(&$config, $campaign) {
+  $config['foo'] = $campaign['foo'];
+}
