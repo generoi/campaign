@@ -144,6 +144,7 @@ function campaign_context_registry() {
  */
 function campaign_campaign_config_info() {
   return array(
+    'active' => TRUE,
     'fb' => array(
       'appid' => NULL,
       'secret' => NULL,
@@ -412,6 +413,13 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
     '#tree' => TRUE,
     '#access' => user_access('administer campaigns'),
     '#weight' => 40,
+  );
+
+  $form['campaign']['active'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Activate campaign'),
+    '#description' => t('Several things might be disabled while a campaign is inactive.'),
+    '#default_value' => $campaign['blog_banner']['active'],
   );
 
   $form['campaign']['fb'] = array(

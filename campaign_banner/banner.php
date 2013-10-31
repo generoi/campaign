@@ -22,6 +22,9 @@ class DB {
     $this->db = new PDO("mysql:host=$host;dbname=$path", $user, $pass);
   }
 
+  /**
+   * @see campaign_counter_increment().
+   */
   function increment($ref, $campaign) {
     $sth = $this->db->prepare("INSERT INTO $this->table (hits, ref, campaign, type, updated) VALUES (1, :ref, :campaign, :type, UNIX_TIMESTAMP()) ON DUPLICATE KEY UPDATE hits = hits + 1");
     return $sth->execute(array(

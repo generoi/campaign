@@ -113,6 +113,7 @@ function campaign_summary($context) {
   $summary = array(
     array('Path', $paths),
     array('Language', $language->name),
+    array('Active', $configs['active'] ? t('Yes') : t('No')),
     array('Application ID', $app_id),
     array('Application Secret', isset($configs['fb']['secret']) ? $configs['fb']['secret'] : t('Not configured')),
     array('Facebook Tab URL', isset($configs['fb']['tab']) ? l($configs['fb']['tab'], $configs['fb']['tab']) : t('Not configured')),
@@ -133,6 +134,7 @@ function campaign_summary($context) {
 
   $summary[] = array('App / Canvas', l($gateway, $gateway, array('language' => $language)));
   $summary[] = array('Page Tab', l($gateway, $gateway, array('language' => $language)));
+  // Mobile Web uses post like page.
   if (isset($postlike)) {
     // Path needs to be suffixed with an '/' to be accepted on Facebook.
     $postlike = url($postlike, array('absolute' => TRUE, 'language' => $language)) . '/';
@@ -155,7 +157,7 @@ function campaign_summary($context) {
   drupal_alter('campaign_summary', $summary, $context);
   return theme('table', array(
     'rows' => $summary,
-    'attributes' => array('class' => array('campaign-config-summary')),
+    'attributes' => array('class' => array('campaign-config-summary', $configs['active'] ? 'campaign-config-active' : 'campaign-config-inactive')),
   ));
 }
 

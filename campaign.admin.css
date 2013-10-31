@@ -37,3 +37,6 @@ table.campaign-config-overview > tbody > tr > td:first-child {
 .campaign-config-details {
   display: none;
 }
+table.campaign-config-overview .campaign-config-inactive {
+  opacity: 0.5;
+}
