@@ -73,3 +73,25 @@ function campaign_counter_increment($campaign, $type, $ref, $count = 1) {
     ->expression('hits', 'hits + :inc', array(':inc' => $count))
     ->execute();
 }
+
+/**
+ * Implements hook_form_campaign_context_rename_alter().
+ */
+function campaign_counter_form_campaign_context_rename_form_alter(&$form, &$form_state) {
+  $form['#submit'][] = 'campaign_counter_rename_submit';
+}
+
+/**
+ * Move over old counters to the new namespace when a capmaign is renamed.
+ */
+function campaign_counter_rename_submit($form, &$form_state) {
+  $namespace = $form_state['values']['name'];
+  $old_namespace = $form_state['values']['original_name'];
+
+  db_update('campaign_counter')
+    ->fields(array(
+      'campaign' => $namespace
+    ))
+    ->condition('campaign', $old_namespace)
+    ->execute();
+}
