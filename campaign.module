@@ -252,11 +252,43 @@ function campaign_get_signed_request($appid, $secret) {
 }
 
 /**
+ * Return the campaign data from a namespace
+ */
+function campaign_get($namespace, $reset = FALSE) {
+  // Cache not to trigger context_load hooks multiple times.
+  $campaigns = &drupal_static(__FUNCTION__);
+  if (!isset($campaigns)) {
+    $campaigns = array();
+  }
+  if (!isset($campaigns[$namespace]) || $reset) {
+    $context = context_load($namespace);
+    $campaigns[$namespace] = campaign_get_from_context($context);
+  }
+  return $campaigns[$namespace];
+}
+
+/**
  * Return the campaign data from a context object.
  */
 function campaign_get_from_context($context) {
   return isset($context->reactions['campaign_context_reaction']['campaign']) ?
     $context->reactions['campaign_context_reaction']['campaign'] : NULL;
+}
+
+/**
+ * Get a list of all campaign names
+ */
+function campaign_list($reset = FALSE) {
+  $list = &drupal_static(__FUNCTION__);
+
+  if (!isset($list) || $result) {
+    $list = db_select('context', 'c')
+      ->fields('c', array('name'))
+      ->condition('tag', CAMPAIGN_CONTEXT_TAG)
+      ->execute()
+      ->fetchCol();
+  }
+  return $list;
 }
 
 /**

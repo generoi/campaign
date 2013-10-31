@@ -152,11 +152,11 @@ function campaign_banner_form_campaign_context_rename_form_alter(&$form, &$form_
  * Hook into campaign renames and change the directory of the images.
  */
 function campaign_banner_rename_submit($form, &$form_state) {
-  $context = context_load($form_state['values']['name']);
-  $campaign = campaign_get_from_context($context);
+  $namespace = $form_state['values']['name'];
+  $campaign = campaign_get($namespace);
   foreach ($campaign['blog_banner']['images'] as $image) {
     if (isset($image['file'])) {
-      $dir = CAMPAIGN_BANNER_UPLOAD_DIR . $context->name . '/';
+      $dir = CAMPAIGN_BANNER_UPLOAD_DIR . $namespace . '/';
       $filepath = $dir . $image['filename'];
       if (file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
         $file = file_load($image['file']);

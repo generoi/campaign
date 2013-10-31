@@ -55,3 +55,21 @@ function campaign_counter_json($method, $campaign, $type) {
   }
   drupal_json_output($data);
 }
+
+/**
+ * Increment a campaign counter.
+ */
+function campaign_counter_increment($campaign, $type, $ref, $count = 1) {
+  db_merge('campaign_counter')
+    ->key(array(
+      'campaign' => $campaign,
+      'type' => $type,
+      'ref' => $ref,
+    ))
+    ->fields(array(
+      'updated' => REQUEST_TIME,
+      'hits' => $count,
+    ))
+    ->expression('hits', 'hits + :inc', array(':inc' => $count))
+    ->execute();
+}
