@@ -4,6 +4,8 @@
  * @file campaign.module
  */
 
+define('CAMPAIGN_CONTEXT_TAG', 'Campaign');
+
 /**
  * Implements hook_help().
  */

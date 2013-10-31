@@ -37,9 +37,7 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
       $form_state['num_blog_banners'] = 1;
     }
   }
-  $form['#attached']['css'] = array(
-    drupal_get_path('module', 'campaign_banner') . '/campaign_banner.admin.css',
-  );
+  $form['#attached']['css'][] = drupal_get_path('module', 'campaign_banner') . '/campaign_banner.admin.css';
 
   $form['campaign']['blog_banner'] = array(
     '#type' => 'fieldset',
@@ -54,7 +52,7 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
   );
   $form['campaign']['blog_banner']['active'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Activate Blog Banner Features',
+    '#title' => t('Activate Blog Banner Features'),
     '#default_value' => $campaign['blog_banner']['active'],
   );
   $form['campaign']['blog_banner']['help'] = array(
