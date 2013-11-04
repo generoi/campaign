@@ -30,7 +30,6 @@ function campaign_tweetcounter_campaign_edit_form_alter(&$form, &$form_state, $n
     }
   }
   $twitter_app_link = l(t('Twitter app'), 'https://dev.twitter.com/apps', array('external' => TRUE));
-  $form['#attached']['css'][] = drupal_get_path('module', 'campaign_tweetcounter') . '/campaign_tweetcounter.admin.css';
 
   $form['campaign']['tweetcounter'] = array(
     '#type' => 'fieldset',
@@ -94,7 +93,7 @@ function campaign_tweetcounter_campaign_edit_form_alter(&$form, &$form_state, $n
       '#description' => t('Eg. %hashtag', array('%hashtag' => '#mushjouluiloa2013')),
       '#maxlength' => 255,
       '#default_value' => isset($campaign['tweetcounter']['hashtags'][$idx]['hashtag']) ? '#' . $campaign['tweetcounter']['hashtags'][$idx]['hashtag'] : '',
-      '#prefix' => '<div class="campaign_tweetcounter-hashtag">',
+      '#prefix' => '<div class="campaign-edit-form-column">',
       '#suffix' => '</div>',
     );
     $form['campaign']['tweetcounter']['hashtags'][$idx]['url'] = array(
@@ -106,9 +105,6 @@ function campaign_tweetcounter_campaign_edit_form_alter(&$form, &$form_state, $n
     );
   }
 
-  // Store the original images used so we can compare and delete
-  $form_state['original_hashtags'] = $campaign['tweetcounter']['hashtags'];
-
   $form['campaign']['tweetcounter']['add_more'] = array(
     '#type' => 'submit',
     '#value' => t('Add another hashtag to track'),
@@ -117,7 +113,7 @@ function campaign_tweetcounter_campaign_edit_form_alter(&$form, &$form_state, $n
       'callback' => 'campaign_tweetcounter_add_more_callback',
       'wrapper' => 'tweetcounters-fieldset-wrapper',
     ),
-    '#prefix' => '<div class="campaign_tweetcounter-add_more">',
+    '#prefix' => '<div class="campaign-edit-form-add_more">',
     '#suffix' => '</div>',
   );
 }

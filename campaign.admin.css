@@ -40,3 +40,21 @@ table.campaign-config-overview > tbody > tr > td:first-child {
 table.campaign-config-overview .campaign-config-inactive {
   opacity: 0.5;
 }
+.campaign-edit-form-column,
+.campaign-edit-form-column-three,
+.campaign-edit-form-column-three + div,
+.campaign-edit-form-column-three + div + div {
+  max-width: 250px;
+  margin-right: 1em;
+  float: left;
+}
+.campaign-edit-form-column,
+.campaign-edit-form-column-three {
+  clear: left;
+}
+.campaign-edit-form-column + div {
+  float: left;
+}
+.campaign-edit-form-add_more {
+  clear: left;
+}

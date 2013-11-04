@@ -88,7 +88,7 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
       '#description' => t('Eg. %filename', array('%filename' => 'jouluiloa2013-banner-200x100.png')),
       '#maxlength' => 255,
       '#default_value' => isset($campaign['blog_banner']['images'][$idx]['filename']) ? $campaign['blog_banner']['images'][$idx]['filename'] : '',
-      '#prefix' => '<div class="campaign_banner-image-filename">',
+      '#prefix' => '<div class="campaign-edit-form-column">',
       '#suffix' => '</div>',
     );
     $form['campaign']['blog_banner']['images'][$idx]['file'] = array(
@@ -129,7 +129,7 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
       'callback' => 'campaign_banner_add_more_callback',
       'wrapper' => 'blog_banners-fieldset-wrapper',
     ),
-    '#prefix' => '<div class="campaign_banner-add_more">',
+    '#prefix' => '<div class="campaign-edit-form-add_more">',
     '#suffix' => '</div>',
   );
 }

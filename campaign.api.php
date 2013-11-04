@@ -49,7 +49,7 @@ function hook_campaign_save_alter($form, $form_state, &$context) {
  *
  * @see \campaign_context_reaction::options_form().
  */
-function hook_campaign_view_alter($output, $instance) {
+function hook_campaign_view_alter($campaign, $instance) {
 }
 
 

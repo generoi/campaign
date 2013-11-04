@@ -295,8 +295,10 @@ function campaign_list($reset = FALSE) {
 /**
  * Discover all campaign configurations available by invoking
  * hook_campaign_config_info().
+ * Optionally pass in a partial config which takes precedence over the
+ * defaults.
  */
-function campaign_config_list($config, $reset = FALSE) {
+function campaign_config_list($config = array(), $reset = FALSE) {
   $cache = &drupal_static(__FUNCTION__);
   if (!isset($cache) || $reset) {
     $cache = module_invoke_all('campaign_config_info');
@@ -333,7 +335,7 @@ function _campaign_array_merge_deep() {
 }
 
 /**
- * Prepare a settings object containing all required keys.
+ * Populate a configs non-declared values with defaults.
  */
 function campaign_load_defaults(&$configs, $reset = FALSE) {
   $configs = campaign_config_list($configs, $reset);
@@ -455,6 +457,10 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
   // The gateway path for this namespace, used for default values.
   $gateway_path = campaign_get_gateway_path($namespace);
   campaign_load_defaults($campaign);
+
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'campaign') . '/campaign.admin.css',
+  );
 
   $form['campaign'] = array(
     '#type' => 'container',
