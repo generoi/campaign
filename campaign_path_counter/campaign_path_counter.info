@@ -1,0 +1,6 @@
+name = Campaign path counter
+description = Campaign counter for path matches using AJAX
+dependencies[] = campaign
+dependencies[] = campaign_counter
+package = custom
+core = 7.x

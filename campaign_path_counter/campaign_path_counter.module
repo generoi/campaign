@@ -1,0 +1,173 @@
+<?php
+
+/**
+ * @file campaign_path_counter.module
+ * TODO: Enter file description here.
+ */
+
+define('CAMPAIGN_PATH_COUNTER_ID', 'path');
+
+/**
+ * Implements hook_campaign_config_info().
+ */
+function campaign_path_counter_campaign_config_info() {
+  return array(
+    'path_counter' => array(
+      'paths' => array()
+    ),
+  );
+}
+
+/**
+ * Implements hook_campaign_edit_form_alter().
+ */
+function campaign_path_counter_campaign_edit_form_alter(&$form, $form_state, $namespace, $campaign) {
+  // Figure out how many fields should be generated.
+  if (empty($form_state['num_path_counters'])) {
+    // Add an extra field below existing hashtags.
+    if (!empty($campaign['path_counter']['paths'])) {
+      $form_state['num_path_counters'] = count($campaign['path_counter']['paths']) + 1;
+    } else {
+      $form_state['num_path_counters'] = 1;
+    }
+  }
+  $form['campaign']['path_counter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Path counter'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#tree' => TRUE,
+    '#access' => user_access('administer campaigns'),
+    '#weight' => 50,
+    '#prefix' => '<div id="path_counters-fieldset-wrapper">',
+    '#suffix' => '</div>',
+  );
+  for ($i = 1; $i <= $form_state['num_path_counters']; $i++) {
+    $idx = $i - 1;
+    $form['campaign']['path_counter']['paths'][$idx]['regex'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Path pattern'),
+      '#description' => t('!link pattern for matching the path, eg. %regex', array(
+        '!link' => l(t('Regular expression'), 'http://php.net/manual/en/function.preg-match.php', array('external' => TRUE)),
+        '%regex' => '/mushjouluiloa\?ref=[a-zA-Z]+$/'
+      )),
+      '#default_value' => isset($campaign['path_counter']['paths'][$idx]['regex']) ? $campaign['path_counter']['paths'][$idx]['regex'] : '',
+      '#prefix' => '<div class="campaign-edit-form-column-three">',
+      '#suffix' => '</div>',
+    );
+    $form['campaign']['path_counter']['paths'][$idx]['type'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Identifying type'),
+      '#description' => t('An identifying type to distinguish different counters. Eg. %type', array('%type' => 'QR')),
+      '#maxlength' => 255,
+      '#default_value' => isset($campaign['path_counter']['paths'][$idx]['type']) ? $campaign['path_counter']['paths'][$idx]['type'] : '',
+    );
+    $form['campaign']['path_counter']['paths'][$idx]['per_referrer'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Once per referrer'),
+      '#description' => t('If checked the path match will only count once per referrer. This makes the page cacheable so use when possible.'),
+      '#default_value' => isset($campaign['path_counter']['paths'][$idx]['per_referrer']) ? $campaign['path_counter']['paths'][$idx]['per_referrer'] : TRUE,
+    );
+  }
+
+  $form['campaign']['path_counter']['add_more'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add another path to track'),
+    '#submit' => array('campaign_path_counter_add_one'),
+    '#ajax' => array(
+      'callback' => 'campaign_path_counter_add_more_callback',
+      'wrapper' => 'path_counters-fieldset-wrapper',
+    ),
+    '#prefix' => '<div class="campaign-edit-form-add_more">',
+    '#suffix' => '</div>',
+  );
+}
+
+/**
+ * Implements hook_campaign_view_alter().
+ */
+function campaign_path_counter_campaign_view_alter($campaign, $instance) {
+  $namespace = $campaign['contexts'][0];
+  $nocache_lifetime = variable_get('campaign_path_counter_nocache_lifetime', 300);
+  foreach ($campaign['path_counter']['paths'] as $path) {
+    // Make sure we have all we need
+    if (empty($path['regex']) || empty($path['type']) || empty($_GET['ref'])) {
+      continue;
+    }
+    if (preg_match($path['regex'], request_uri())) {
+      if ($path['per_referrer']) {
+        if (!($hits = campaign_counter_get_hits($namespace, $path['type'], $_GET['ref']))) {
+          campaign_counter_increment($namespace, $path['type'], $_GET['ref']);
+        }
+      } else {
+        // Count each page hit. Don't cache.
+        drupal_page_is_cacheable(FALSE);
+        // Set NO_CACHE cookie for varnish
+        if (!isset($_COOKIE['NO_CACHE'])) {
+          global $cookie_domain;
+          setcookie('NO_CACHE', 'Y', $_SERVER['REQUEST_TIME'] + $nocache_lifetime, request_uri(), $cookie_domain);
+        }
+        campaign_counter_increment($namespace, $path['type'], $_GET['ref']);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_campaign_save_alter().
+ */
+function campaign_path_counter_campaign_save_alter($form, $form_state, &$context) {
+  $campaign = &$context->reactions['campaign_context_reaction']['campaign'];
+
+  // Remove submit buttons value so that it's not saved in the context.
+  unset($campaign['path_counter']['add_more']);
+
+  // Iterate over all fields, removing empty values
+  foreach ($campaign['path_counter']['paths'] as $idx => $path) {
+    if (empty($path['regex'])) {
+      unset($campaign['path_counter']['paths'][$idx]);
+      continue;
+    }
+    if (empty($path['type'])) {
+      drupal_set_message(t('You should set a identifying type for each path counter path, otherwise it will not be tracked.'), 'warning');
+    }
+  }
+}
+
+/**
+ * AJAX callback
+ */
+function campaign_path_counter_add_one($form, &$form_state) {
+  $form_state['num_path_counters']++;
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * AJAX callback
+ */
+function campaign_path_counter_add_more_callback($form, $form_state) {
+  return $form['campaign']['path_counter'];
+}
+
+/**
+ * Implements hook_campaign_summary_alter().
+ */
+function campaign_path_counter_campaign_summary_alter(&$summary, $context) {
+  $campaign = campaign_get_from_context($context);
+  $links = array();
+  if (!isset($campaign['path_counter']['paths'])) {
+    return;
+  }
+  foreach ($campaign['path_counter']['paths'] as $path) {
+    $links[] = l(t('@type (Regex: @regex)', array(
+      '@regex' => $path['regex'],
+      '@type' => $path['type'],
+    )), 'admin/config/campaigns/campaign-counters', array(
+      'query' => array(
+        'campaign' => $context->name,
+        'type' => $path['type'],
+      ),
+    ));
+  }
+  $summary[] = array(t('Path Counter'), implode(', ', $links));
+}
