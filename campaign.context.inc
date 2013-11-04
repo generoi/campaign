@@ -41,6 +41,7 @@ class campaign_context_reaction extends context_reaction {
       }
 
       if (!empty($output) && !empty($instance_names)) {
+        campaign_load_defaults($output);
         $output['contexts'] = $instance_names;
         $instance = 'context:' . implode(',', $instance_names);
         // Allow altering

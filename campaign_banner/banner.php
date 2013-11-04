@@ -52,6 +52,11 @@ $mimetypes = array(
   'gif' => 'image/gif',
 );
 
+// Stop varnish from cashing.
+if (!isset($_COOKIE['NO_CACHE'])) {
+  set_cookie('NO_CACHE', 'Y', $_SERVER['REQUEST_TIME'] + 300, $_SERVER['REQUEST_URI'], $_SERVER['SERVER_NAME']);
+}
+
 if (in_array($extension, $mimetypes) && file_exists($image)) {
   if (isset($ref)) {
     $db = new DB($databases);

@@ -4,9 +4,10 @@
  * Implements hook_menu().
  */
 function campaign_counter_menu() {
-  $items['campaign_counter/unique/%/%'] = array(
+  $items['campaign_counter/ajax/%/%/%'] = array(
     'page callback' => 'campaign_counter_json',
-    'page arguments' => array(1, 2, 3),
+    'page arguments' => array(2, 3, 4),
+    'delivery callback' => 'drupal_json_output',
     'access arguments' => array('access campaign counter json'),
   );
   return $items;
@@ -52,8 +53,12 @@ function campaign_counter_json($method, $campaign, $type) {
         ->rowCount();
       $data->result = $result;
       break;
+    default:
+      $error = new stdClass();
+      $error->message = t('Unkown method');
+      $data->errors[] = $error;
   }
-  drupal_json_output($data);
+  return $data;
 }
 
 /**
@@ -72,6 +77,19 @@ function campaign_counter_increment($campaign, $type, $ref, $count = 1) {
     ))
     ->expression('hits', 'hits + :inc', array(':inc' => $count))
     ->execute();
+}
+
+/**
+ * Get the hit count for a specific counter.
+ */
+function campaign_counter_get_hits($campaign, $type, $ref) {
+  return db_select('campaign_counter', 'c')
+    ->fields('c', array('hits'))
+    ->condition('campaign', $campaign)
+    ->condition('type', $type)
+    ->condition('ref', $ref)
+    ->execute()
+    ->fetchField();
 }
 
 /**
