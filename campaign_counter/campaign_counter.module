@@ -45,6 +45,13 @@ function campaign_counter_permission() {
 }
 
 /**
+ * Implements hook_init().
+ */
+function campaign_counter_init() {
+  drupal_add_js(drupal_get_path('module', 'campaign_counter') . '/campaign_counter.js');
+}
+
+/**
  * JSON service to query campaign counters.
  */
 function campaign_counter_json($method, $campaign, $type, $ref = NULL) {

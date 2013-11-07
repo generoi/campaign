@@ -1,6 +1,7 @@
 (function($) {
   var isFacebook = false
-    , isInit = false;
+    , isInit = false
+    , log = function() { console && console.log && console.log(arguments); };
 
   // Sniff facebook.
   if (/^(app_runner|iframe_canvas)/.test(window.name || '')) {
@@ -34,7 +35,10 @@
     }
   };
 
-  Drupal.campaign = Drupal.campaign = {};
+  Drupal.campaign = Drupal.campaign || {};
+
+  // Contains custom counter hooks
+  Drupal.campaign.counters = Drupal.campaign.counters || {};
 
   /**
    * Listen to click events on fb-event elements. This works by adding a DOM
@@ -111,5 +115,20 @@
       if ($.fn.placeholder) $input.placeholder();
     });
   };
+
+  /**
+   * Hook into campaign_counter to provide a facebook like counter
+   */
+  Drupal.campaign.counters.facebook = function(page) {
+    var $deferred = $.Deferred();
+    $.getJSON('https://graph.facebook.com/' + page)
+      .done(function(data) {
+        $deferred.resolve([data.likes, 'success']);
+      })
+      .fail(function(data) {
+        $deferred.resolve([0, 'error']);
+      });
+    return $deferred;
+  }
 
 }(jQuery));
