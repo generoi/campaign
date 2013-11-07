@@ -10,6 +10,12 @@ function campaign_counter_menu() {
     'delivery callback' => 'drupal_json_output',
     'access arguments' => array('access campaign counter json'),
   );
+  $items['campaign_counter/ajax/%/%/%/%'] = array(
+    'page callback' => 'campaign_counter_json',
+    'page arguments' => array(2, 3, 4, 5),
+    'delivery callback' => 'drupal_json_output',
+    'access arguments' => array('access campaign counter json'),
+  );
   return $items;
 }
 
@@ -41,7 +47,7 @@ function campaign_counter_permission() {
 /**
  * JSON service to query campaign counters.
  */
-function campaign_counter_json($method, $campaign, $type) {
+function campaign_counter_json($method, $campaign, $type, $ref = NULL) {
   $data = new stdClass();
   switch ($method) {
     case 'unique':
@@ -53,7 +59,12 @@ function campaign_counter_json($method, $campaign, $type) {
         ->rowCount();
       $data->result = $result;
       break;
+    case 'hits':
+      $result = campaign_counter_get_hits($campaign, $type, $ref);
+      $data->result = $result;
+      break;
     default:
+      drupal_add_http_header('Status', '404 Not Found');
       $error = new stdClass();
       $error->message = t('Unkown method');
       $data->errors[] = $error;
@@ -83,7 +94,7 @@ function campaign_counter_increment($campaign, $type, $ref, $count = 1) {
  * Get the hit count for a specific counter.
  */
 function campaign_counter_get_hits($campaign, $type, $ref) {
-  return db_select('campaign_counter', 'c')
+  return (int) db_select('campaign_counter', 'c')
     ->fields('c', array('hits'))
     ->condition('campaign', $campaign)
     ->condition('type', $type)
