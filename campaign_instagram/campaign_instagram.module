@@ -1,0 +1,99 @@
+<?php
+
+/**
+ * @file campaign_instagram.module
+ * TODO: Enter file description here.
+ */
+
+define('CAMPAIGN_INSTAGRAM_API_BASE', 'https://api.instagram.com/v1');
+define('CAMPAIGN_INSTAGRAM_ID', 'instagram');
+
+/**
+ * Implements hook_menu().
+ */
+function campaign_instagram_menu() {
+  $items['campaign_instagram/ajax/%'] = array(
+    'page callback' => 'campaign_instagram_json',
+    'page arguments' => array(2),
+    'delivery callback' => 'drupal_json_output',
+    'access arguments' => array('access campaign counter json'),
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_init().
+ */
+function campaign_instagram_init() {
+  drupal_add_js(drupal_get_path('module', 'campaign_instagram') . '/campaign_instagram.js');
+}
+
+/**
+ * AJAX callback
+ */
+function campaign_instagram_add_one($form, &$form_state) {
+  $form_state['num_instagram_counters']++;
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Return the media count for an instagram tag.
+ */
+function campaign_instagram_json($namespace) {
+  $campaign = campaign_get($namespace);
+  $client_id = $campaign['instagram']['client_id'];
+  $data = new stdClass();
+  $data->result = 0;
+  foreach ($campaign['instagram']['tags'] as $tag_data) {
+    $tag = preg_replace('/^\s*\#?([a-zA-Z0-9-_]+)\s*$/', '$1', $tag_data['tag']);
+    if ($result = campaign_instagram_get_tag($tag, $client_id)) {
+      $data->result += $result;
+    }
+  }
+  return $data;
+}
+
+/**
+ * Get media count for an instagram tag.
+ */
+function campaign_instagram_get_tag($tag, $client_id, $reset = FALSE) {
+  $tags = &drupal_static(__FUNCTION__);
+  if (!isset($tags)) {
+    $tags = array();
+  }
+  if (!isset($tags[$tag]) || $reset) {
+    if (!$reset && ($cache = cache_get('campaign_instagram_tags')) && !empty($cache->data)) {
+      $tags = unserialize($cache->data);
+    }
+    if (!isset($tags[$tag])) {
+      $query = http_build_query(array('client_id' => $client_id));
+      $path = CAMPAIGN_INSTAGRAM_API_BASE . '/tags/' . $tag . '?' . $query;
+      $result = drupal_http_request($path);
+      try {
+        $json = json_decode($result->data);
+        if (isset($json->meta->error_type)) {
+          $type = WATCHDOG_ERROR;
+        }
+        else {
+          $type = WATCHDOG_INFO;
+        }
+      } catch(Exception $e) {
+        $type = WATCHDOG_ERROR;
+      }
+      watchdog('campaign_instagram', 'Request instagram tag with %path: %response', array(
+        '%path' => $path,
+        '%response' => $result->data,
+      ), $type);
+
+      if (isset($json)) {
+        $tags[$tag] = (int) $json->data->media_count;
+        cache_set('campaign_instagram_tags', serialize($tags), 'cache', CACHE_TEMPORARY);
+      }
+      else {
+        $tags[$tag] = NULL;
+      }
+    }
+  }
+
+  return $tags[$tag];
+}

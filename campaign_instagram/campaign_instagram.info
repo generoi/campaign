@@ -1,0 +1,6 @@
+name = Campaign Instagram Counter
+description = Track instagram hashtags for campaigns
+dependencies[] = campaign
+dependencies[] = campaign_counter
+package = custom
+core = 7.x
