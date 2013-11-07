@@ -152,6 +152,7 @@ function campaign_campaign_config_info() {
       'secret' => NULL,
       'tab' => NULL,
       'status' => FALSE,
+      'page' => NULL,
     ),
     'config' => array(
       'prelike' => NULL,
@@ -162,6 +163,9 @@ function campaign_campaign_config_info() {
     'assets' => array(
       'css' => array(),
       'js' => array(),
+    ),
+    'alter' => array(
+      'hide' => NULL,
     ),
   );
 }
@@ -191,6 +195,23 @@ function campaign_page_build() {
     drupal_add_html_head($js_redirect, 'js_redirect');
     drupal_add_js($path . '/js/campaign.js');
     drupal_add_css($path . '/campaign.css');
+  }
+}
+
+/**
+ * Implements hook_campaign_view_alter().
+ */
+function campaign_campaign_view_alter($campaign, $instance) {
+  $campaign = drupal_static('campaign_context', array());
+  if (!empty($campaign['alter']['hide'])) {
+    $selectors = explode(',', $campaign['alter']['hide']);
+    $selectors = 'html.facebook ' . implode(', html.facebook ', $selectors);
+    $css_hide = array(
+      '#type' => 'markup',
+      '#markup' => '<style>' . $selectors . ' { display: none !important; }</style>',
+      '#weight' => 1000,
+    );
+    drupal_add_html_head($css_hide, 'css_hide');
   }
 }
 
@@ -439,6 +460,9 @@ function campaign_social_facebook_defaults_alter(&$settings) {
   $config = array(
     'autogrow' => TRUE,
     'scrollTop' => TRUE,
+    'namespace' => $campaign['contexts'][0],
+    'active' => $campaign['active'],
+    'facebook_page' => $campaign['fb']['page'],
   );
 
   if (isset($campaign['config'])) {
@@ -513,10 +537,17 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
     '#type' => 'textfield',
     '#title' => t('Facebook Tab URL'),
     '#description' => t('The tab url of the facebook page where the application will be located. This is where users will be redirected. You can get this url by first adding !link, afterwhich you should visit the page tab, copy the URL and paste it in here. Remember to update this when going live!', array(
-      '!link' => l(t('adding it to your page'), 'http://www.facebook.com/dialog/pagetab?app_id=' . (isset($campaign['fb']['appid']) ? $campaign['fb']['appid'] : '') . '&redirect_uri=' . url('<front>', array('absolute' => TRUE)), array('attributes' => array('target' => '_blank'))),
+      '!link' => l(t('adding it to your page'), 'http://www.facebook.com/dialog/pagetab?app_id=' . $campaign['fb']['appid'] . '&redirect_uri=' . url('<front>', array('absolute' => TRUE)), array('attributes' => array('target' => '_blank'))),
     )),
     '#maxlength' => 255,
     '#default_value' => $campaign['fb']['tab'],
+  );
+  $form['campaign']['fb']['page'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Facebook Page ID'),
+    '#description' => t('The ID of the page where the campaign will be used. Eg. %page. Remember to update this when going live!', array('%page' => 'mushbarf.fi')),
+    '#maxlength' => 255,
+    '#default_value' => $campaign['fb']['page'],
   );
   $form['campaign']['fb']['status'] = array(
     '#type' => 'checkbox',
@@ -590,6 +621,23 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
     '#description' => t('Put each file on a separate line, relative to the Drupal root directory. %t will be expanded into the theme path. E.g. %t/css/custom.css'),
     '#type' => 'textarea',
     '#default_value' => html_entity_decode(implode('&#13;&#10;', $campaign['assets']['js'])),
+  );
+  $form['campaign']['alter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Page alterations'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#tree' => TRUE,
+    '#access' => user_access('administer campaigns'),
+    '#weight' => 55,
+    '#group' => 'campaign',
+  );
+  $form['campaign']['alter']['hide'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Hide selectors'),
+    '#description' => t('Comma delimited list of selectors to hide on Facebook with CSS. Eg. %selectors', array('%selectors' => '#logo, .region-header, #menu-bar, #footer')),
+    '#maxlength' => 255,
+    '#default_value' => $campaign['alter']['hide'],
   );
 
   drupal_alter('campaign_edit_form', $form, $form_state, $namespace, $campaign);
