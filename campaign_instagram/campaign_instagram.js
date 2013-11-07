@@ -2,7 +2,7 @@
   Drupal.campaign.counters = Drupal.campaign.counters || {};
 
   /**
-   * Hook into campaign_counter to provide a facebook like counter
+   * Hook into campaign_counter to provide a media counter for instagram tags.
    */
   Drupal.campaign.counters.instagram = function() {
     var namespace = Drupal.settings.campaign.namespace
