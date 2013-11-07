@@ -381,6 +381,14 @@ function campaign_context_edit_form_submit($form, &$form_state) {
     $form_state['values']['campaign']['assets'][$type] = $files;
   }
 
+  // Move active state back into the campaign array, we moved it out not to
+  // render it in the vertical tabs.
+  $form_state['values']['campaign']['active'] = $form_state['values']['campaign_active'];
+  unset($form_state['values']['campaign_active']);
+
+  // Unset vertical_tab setting
+  unset($form_state['values']['campaign']['campaign__active_tab']);
+
   $context->reactions['campaign_context_reaction']['campaign'] = $form_state['values']['campaign'];
   $paths = explode("\n", str_replace("\r", '', $form_state['values']['path']));
   // Trim paths and remove empty elements.

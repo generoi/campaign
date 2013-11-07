@@ -21,7 +21,7 @@ function campaign_path_counter_campaign_config_info() {
 /**
  * Implements hook_campaign_edit_form_alter().
  */
-function campaign_path_counter_campaign_edit_form_alter(&$form, $form_state, $namespace, $campaign) {
+function campaign_path_counter_campaign_edit_form_alter(&$form, &$form_state, $namespace, $campaign) {
   // Figure out how many fields should be generated.
   if (empty($form_state['num_path_counters'])) {
     // Add an extra field below existing hashtags.
@@ -35,12 +35,14 @@ function campaign_path_counter_campaign_edit_form_alter(&$form, $form_state, $na
     '#type' => 'fieldset',
     '#title' => t('Path counter'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => FALSE,
     '#tree' => TRUE,
     '#access' => user_access('administer campaigns'),
     '#weight' => 50,
-    '#prefix' => '<div id="path_counters-fieldset-wrapper">',
-    '#suffix' => '</div>',
+    '#group' => 'campaign',
+  );
+  $form['campaign']['path_counter']['help'] = array(
+    '#markup' => '<p>' . t('If %opt is used, the path match will only count once per referrer. This allows pages to be cached so use it when possible.', array('%top' => t('once per referrer'))) . '</p>',
   );
   for ($i = 1; $i <= $form_state['num_path_counters']; $i++) {
     $idx = $i - 1;
@@ -48,7 +50,7 @@ function campaign_path_counter_campaign_edit_form_alter(&$form, $form_state, $na
       '#type' => 'textfield',
       '#title' => t('Path pattern'),
       '#description' => t('!link pattern for matching the path, eg. %regex', array(
-        '!link' => l(t('Regular expression'), 'http://php.net/manual/en/function.preg-match.php', array('external' => TRUE)),
+        '!link' => l(t('Regex'), 'http://php.net/manual/en/function.preg-match.php', array('external' => TRUE)),
         '%regex' => '/mushjouluiloa\?ref=[a-zA-Z]+$/'
       )),
       '#default_value' => isset($campaign['path_counter']['paths'][$idx]['regex']) ? $campaign['path_counter']['paths'][$idx]['regex'] : '',
@@ -58,14 +60,13 @@ function campaign_path_counter_campaign_edit_form_alter(&$form, $form_state, $na
     $form['campaign']['path_counter']['paths'][$idx]['type'] = array(
       '#type' => 'textfield',
       '#title' => t('Identifying type'),
-      '#description' => t('An identifying type to distinguish different counters. Eg. %type', array('%type' => 'QR')),
+      '#description' => t('Eg. %type', array('%type' => 'QR')),
       '#maxlength' => 255,
       '#default_value' => isset($campaign['path_counter']['paths'][$idx]['type']) ? $campaign['path_counter']['paths'][$idx]['type'] : '',
     );
     $form['campaign']['path_counter']['paths'][$idx]['per_referrer'] = array(
       '#type' => 'checkbox',
       '#title' => t('Once per referrer'),
-      '#description' => t('If checked the path match will only count once per referrer. This makes the page cacheable so use when possible.'),
       '#default_value' => isset($campaign['path_counter']['paths'][$idx]['per_referrer']) ? $campaign['path_counter']['paths'][$idx]['per_referrer'] : TRUE,
     );
   }
@@ -75,8 +76,8 @@ function campaign_path_counter_campaign_edit_form_alter(&$form, $form_state, $na
     '#value' => t('Add another path to track'),
     '#submit' => array('campaign_path_counter_add_one'),
     '#ajax' => array(
-      'callback' => 'campaign_path_counter_add_more_callback',
-      'wrapper' => 'path_counters-fieldset-wrapper',
+      'callback' => 'campaign_add_more_callback',
+      'wrapper' => 'campaign-wrapper',
     ),
     '#prefix' => '<div class="campaign-edit-form-add_more">',
     '#suffix' => '</div>',
@@ -140,13 +141,6 @@ function campaign_path_counter_campaign_save_alter($form, $form_state, &$context
 function campaign_path_counter_add_one($form, &$form_state) {
   $form_state['num_path_counters']++;
   $form_state['rebuild'] = TRUE;
-}
-
-/**
- * AJAX callback
- */
-function campaign_path_counter_add_more_callback($form, $form_state) {
-  return $form['campaign']['path_counter'];
 }
 
 /**

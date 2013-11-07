@@ -44,7 +44,7 @@ table.campaign-config-overview .campaign-config-inactive {
 .campaign-edit-form-column-three,
 .campaign-edit-form-column-three + div,
 .campaign-edit-form-column-three + div + div {
-  max-width: 250px;
+  max-width: 27%;
   margin-right: 1em;
   float: left;
 }

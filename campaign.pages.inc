@@ -72,7 +72,7 @@ function campaign_gateway($namespace, $config) {
 
   // In case the campaign is inactive and an inactive page is set, redirect to it.
   // @TODO can we move this up in the flow?
-  if (!empty($config['active']) && !empty($config['config']['inactive'])) {
+  if (isset($config['active']) && $config['active'] === FALSE && !empty($config['config']['inactive'])) {
     header('Location: ' . url($config['config']['inactive'], array('absolute' => TRUE, 'query' => $query, 'prefix' => $prefix)));
   }
   // (3) If the user has liked the page, redirect to the configured page.

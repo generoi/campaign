@@ -35,12 +35,11 @@ function campaign_tweetcounter_campaign_edit_form_alter(&$form, &$form_state, $n
     '#type' => 'fieldset',
     '#title' => t('Tweet counter'),
     '#collapsible' => TRUE,
-    '#collapsed' => !$campaign['tweetcounter']['active'],
+    '#collapsed' => FALSE,
     '#tree' => TRUE,
     '#access' => user_access('administer campaigns'),
     '#weight' => 55,
-    '#prefix' => '<div id="tweetcounters-fieldset-wrapper">',
-    '#suffix' => '</div>',
+    '#group' => 'campaign',
   );
   $form['campaign']['tweetcounter']['active'] = array(
     '#type' => 'checkbox',
@@ -110,8 +109,8 @@ function campaign_tweetcounter_campaign_edit_form_alter(&$form, &$form_state, $n
     '#value' => t('Add another hashtag to track'),
     '#submit' => array('campaign_tweetcounter_add_one'),
     '#ajax' => array(
-      'callback' => 'campaign_tweetcounter_add_more_callback',
-      'wrapper' => 'tweetcounters-fieldset-wrapper',
+      'callback' => 'campaign_add_more_callback',
+      'wrapper' => 'campaign-wrapper',
     ),
     '#prefix' => '<div class="campaign-edit-form-add_more">',
     '#suffix' => '</div>',

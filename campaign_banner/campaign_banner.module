@@ -46,12 +46,11 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
     '#type' => 'fieldset',
     '#title' => t('Blog Banner'),
     '#collapsible' => TRUE,
-    '#collapsed' => !$campaign['blog_banner']['active'],
+    '#collapsed' => FALSE,
     '#tree' => TRUE,
     '#access' => user_access('administer campaigns'),
     '#weight' => 55,
-    '#prefix' => '<div id="blog_banners-fieldset-wrapper">',
-    '#suffix' => '</div>',
+    '#group' => 'campaign',
   );
   $form['campaign']['blog_banner']['active'] = array(
     '#type' => 'checkbox',
@@ -126,8 +125,8 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
     '#value' => t('Add another banner image'),
     '#submit' => array('campaign_banner_add_one'),
     '#ajax' => array(
-      'callback' => 'campaign_banner_add_more_callback',
-      'wrapper' => 'blog_banners-fieldset-wrapper',
+      'callback' => 'campaign_add_more_callback',
+      'wrapper' => 'campaign-wrapper',
     ),
     '#prefix' => '<div class="campaign-edit-form-add_more">',
     '#suffix' => '</div>',
@@ -178,13 +177,6 @@ function campaign_banner_rename_submit($form, &$form_state) {
 function campaign_banner_add_one($form, &$form_state) {
   $form_state['num_blog_banners']++;
   $form_state['rebuild'] = TRUE;
-}
-
-/**
- * AJAX callback
- */
-function campaign_banner_add_more_callback($form, $form_state) {
-  return $form['campaign']['blog_banner'];
 }
 
 /**

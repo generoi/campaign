@@ -463,20 +463,24 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
   );
 
   $form['campaign'] = array(
-    '#type' => 'container',
+    '#type' => 'vertical_tabs',
     '#title' => t('Campaign'),
     '#multilingual' => TRUE,
     '#collapsible' => FALSE,
     '#tree' => TRUE,
     '#access' => user_access('administer campaigns'),
     '#weight' => 40,
+    '#prefix' => '<div id="campaign-wrapper">',
+    '#suffix' => '</div>',
   );
 
-  $form['campaign']['active'] = array(
+  // Map this into the campaign array when saving, we dont want it rendered
+  // inside the vertical tab.
+  $form['campaign_active'] = array(
     '#type' => 'checkbox',
     '#title' => t('Activate campaign'),
     '#description' => t('Several things might be disabled while a campaign is inactive.'),
-    '#default_value' => $campaign['blog_banner']['active'],
+    '#default_value' => $campaign['active'],
   );
 
   $form['campaign']['fb'] = array(
@@ -487,6 +491,7 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
     '#tree' => TRUE,
     '#access' => user_access('administer campaigns'),
     '#weight' => 40,
+    '#group' => 'campaign',
   );
   $form['campaign']['fb']['appid'] = array(
     '#type' => 'textfield',
@@ -499,7 +504,7 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
     '#type' => 'textfield',
     '#title' => t('Facebook Application Secret'),
     '#description' => t('The application secret this campaign will use. You can find it at !link', array(
-      '!link' => l(t('Facebook developers center'), 'https://developers.facebook.com/apps/' . (isset($campaign['fb']['appid']) ? $campaign['fb']['appid']  . '/summary' : ''), array('attributes' => array('target' => '_blank'))),
+      '!link' => l(t('Facebook developers center'), 'https://developers.facebook.com/apps/' . (!empty($campaign['fb']['appid']) ? $campaign['fb']['appid']  . '/summary' : ''), array('attributes' => array('target' => '_blank'))),
     )),
     '#maxlength' => 32,
     '#default_value' => $campaign['fb']['secret'],
@@ -528,6 +533,7 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
     '#tree' => TRUE,
     '#access' => user_access('administer campaigns'),
     '#weight' => 50,
+    '#group' => 'campaign',
   );
   $language_list = language_list();
   $languages = array();
@@ -567,10 +573,11 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
     '#type' => 'fieldset',
     '#title' => t('Assets'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => FALSE,
     '#tree' => TRUE,
     '#access' => user_access('administer campaigns'),
     '#weight' => 55,
+    '#group' => 'campaign',
   );
   $form['campaign']['assets']['css'] = array(
     '#title' => t('Additional CSS'),
@@ -610,4 +617,11 @@ function campaign_add_dialog($parameters) {
   // the message element with css.
   $json = json_encode($parameters);
   drupal_set_message('<script>var dialogs = dialogs || [];dialogs.push(' . $json . ');</script>', 'js');
+}
+
+/**
+ * AJAX callback
+ */
+function campaign_add_more_callback($form, $form_state) {
+  return $form['campaign'];
 }

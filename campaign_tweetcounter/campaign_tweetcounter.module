@@ -184,10 +184,3 @@ function campaign_tweetcounter_add_one($form, &$form_state) {
   $form_state['num_tweet_counters']++;
   $form_state['rebuild'] = TRUE;
 }
-
-/**
- * AJAX callback
- */
-function campaign_tweetcounter_add_more_callback($form, $form_state) {
-  return $form['campaign']['tweetcounter'];
-}
