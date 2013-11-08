@@ -39,8 +39,8 @@ function campaign_gateway($namespace, $config) {
   // Using url() requires path.inc which is loaded in DRUPAL_BOOTSTRAP_FULL.
   require_once DRUPAL_ROOT . '/sites/all/libraries/Mobile-Detect/Mobile_Detect.php';
 
-  $query = NULL;
   $state = 0;
+  $query = drupal_get_query_parameters();
   $data = campaign_get_signed_request($config['fb']['appid'], $config['fb']['secret']);
   $is_inactive = isset($config['active']) && $config['active'] === FALSE && !empty($config['config']['inactive']);
   $detect = new Mobile_Detect();
@@ -124,6 +124,16 @@ function campaign_gateway($namespace, $config) {
       $prefix = ''; // External url shouldnt use a prefix.
       $location = $config['fb']['tab'];
       break;
+  }
+
+  // Move app_data back into the page by merging it with the query before
+  // redirecting.
+  if (!empty($data['app_data'])) {
+    try {
+      $params = json_decode(urldecode($data['app_data']), TRUE);
+      $query += (array) $params;
+    } catch (Exception $e) {
+    }
   }
 
   // Using url() requires path.inc which is loaded in DRUPAL_BOOTSTRAP_FULL.
