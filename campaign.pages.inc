@@ -113,7 +113,7 @@ function campaign_gateway($namespace, $config) {
       $location = $config['config']['prelike'];
       break;
     case 'inactive':
-      $location = $config['config']['postlike'];
+      $location = $config['config']['inactive'];
       break;
     case 'direct':
     default:
