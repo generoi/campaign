@@ -221,7 +221,10 @@ function campaign_campaign_view_alter($campaign, $instance) {
  * Implement a gateway page while bootstrapping as little as possible.
  */
 function campaign_boot() {
-  if (arg(1) == 'gateway') {
+  static $active;
+  // Make sure this only runs once, multiple bootstraps might be possible.
+  if (arg(1) == 'gateway' && !isset($active)) {
+    $active = TRUE;
     $namespace = arg(2);
     $result = db_query('SELECT reactions FROM {context} WHERE name = :name', array(':name' => $namespace))->fetchField();
     $result = unserialize($result);
@@ -445,18 +448,32 @@ function campaign_preprocess_html(&$variables) {
 }
 
 /**
+ * Implements hook_process_page().
+ *
+ * Remove variables from page.tpl.php
+ */
+function campaign_process_page(&$variables) {
+  $campaign = drupal_static('campaign_context', array());
+  if (!empty($campaign)) {
+    // @TODO check if within FB
+  }
+}
+
+
+/**
  * Implements hook_social_facebook_defaults_alter().
  *
  * Hook in Application settings to socialite.
  */
 function campaign_social_facebook_defaults_alter(&$settings) {
   $campaign = drupal_static('campaign_context', array());
-  if (!empty($campaign)) {
-    $settings['facebook']['options'] += array(
-      'appId' => isset($campaign['fb']['appid']) ? $campaign['fb']['appid'] : NULL,
-      'status' => isset($campaign['fb']['status']) ? $campaign['fb']['status'] : FALSE,
-    );
+  if (empty($campaign)) {
+    return;
   }
+  $settings['facebook']['options'] += array(
+    'appId' => isset($campaign['fb']['appid']) ? $campaign['fb']['appid'] : NULL,
+    'status' => isset($campaign['fb']['status']) ? $campaign['fb']['status'] : FALSE,
+  );
   $config = array(
     'autogrow' => TRUE,
     'scrollTop' => TRUE,
