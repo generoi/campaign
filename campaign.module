@@ -159,6 +159,8 @@ function campaign_campaign_config_info() {
       'postlike' => NULL,
       'langcode' => NULL,
       'inactive' => NULL,
+      'force_facebook' => NULL,
+      'mobile_prelike' => NULL,
     ),
     'assets' => array(
       'css' => array(),
@@ -480,6 +482,7 @@ function campaign_social_facebook_defaults_alter(&$settings) {
     'namespace' => $campaign['contexts'][0],
     'active' => $campaign['active'],
     'facebook_page' => $campaign['fb']['page'],
+    'facebook_tab' => $campaign['fb']['tab'],
   );
 
   if (isset($campaign['config'])) {
@@ -616,6 +619,18 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
     '#maxlength' => 255,
     '#default_value' => $campaign['config']['inactive'],
   );
+  $form['campaign']['config']['force_facebook'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Force Facebook usage'),
+    '#description' => t('By activating, users visiting a campaign page will be redirected to facebook if they are signed in.'),
+    '#default_value' => $campaign['config']['force_facebook'],
+  );
+  // $form['campaign']['config']['mobile_prelike'] = array(
+  //   '#type' => 'checkbox',
+  //   '#title' => t('Mobile prelike'),
+  //   '#description' => t('By activating, mobile users will be prompted to authorize the application to access their likes. If they have not liked the page, they will be redirected to the before like page.'),
+  //   '#default_value' => $campaign['config']['mobile_prelike'],
+  // );
 
   $form['campaign']['assets'] = array(
     '#type' => 'fieldset',

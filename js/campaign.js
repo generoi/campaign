@@ -32,6 +32,10 @@
     attach: function(context, settings) {
       Drupal.campaign.attachEvents();
       Drupal.campaign.executeQueue();
+
+      if (settings.campaign.force_facebook) {
+        Drupal.campaign.forceFacebook();
+      }
     }
   };
 
@@ -80,6 +84,26 @@
     }
     window.dialogs = [];
   };
+
+  /**
+   * If the user is signed into Facebook but not viewing the site through
+   * facebook, redirect them to the page tab.
+   */
+  Drupal.campaign.forceFacebook = function() {
+    // Only run if we are not on facebook, and we arent using a mobile browser.
+    if (!$('html').hasClass('not-facebook') || $(window).width() <= 810) {
+      return;
+    }
+    Drupal.campaign.run(function() {
+      this.getLoginStatus(function(response) {
+        // We are signed into facebook.
+        if (response.status !== 'unknown') {
+          var page_tab = Drupal.settings.campaign.facebook_tab;
+          if (page_tab) window.location.href = page_tab;
+        }
+      });
+    });
+  }
 
   /**
    * Make sure the callback runs after FB has been inited.
