@@ -1,4 +1,5 @@
 (function($) {
+  Drupal.campaign = Drupal.campaign || {};
   Drupal.campaign.counters = Drupal.campaign.counters || {};
 
   /**

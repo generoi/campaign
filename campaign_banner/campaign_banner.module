@@ -22,7 +22,6 @@ function campaign_banner_campaign_config_info() {
       'href' => NULL,
       'alt' => NULL,
       'images' => array(),
-      'active' => FALSE,
     ),
   );
 }
@@ -52,14 +51,10 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
     '#weight' => 55,
     '#group' => 'campaign',
   );
-  $form['campaign']['blog_banner']['active'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Activate Blog Banner Features'),
-    '#default_value' => $campaign['blog_banner']['active'],
-  );
   $form['campaign']['blog_banner']['help'] = array(
-    '#markup' => '<p>' . t('Manage blog banners associated with this campaign by adding them here. Once done you copy paste the resulting HTML snippet into the page where your visitors can choose their banner. All JavaScript is readily set up.') . '</p>',
+    '#markup' => '<p>' . t('Once done you copy paste the resulting HTML snippet into the page where your visitors can choose their banner. All JavaScript is readily set up.') . '</p>',
   );
+
   $form['campaign']['blog_banner']['href'] = array(
     '#type' => 'textfield',
     '#title' => t('Link address'),
@@ -76,7 +71,7 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
   );
   $form['campaign']['blog_banner']['file_help'] = array(
     '#markup' => '<h3>' . t('Banner images') . '</h3>'
-      . '<p>' . t('Upload the banner images to be used. Setting a filename renames the file once this form is saved, which is useful when uploading new images. If a file already exists with the same name (within the campaign), it will be replaced without warning!') . '</p>',
+      . '<p>' . t('Setting a filename renames the file once this form is saved, which is useful when uploading new images. If a file already exists with the same name (within the campaign), it will be replaced without warning!') . '</p>',
   );
 
   for ($i = 1; $i <= $form_state['num_blog_banners']; $i++) {
@@ -138,12 +133,12 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
  */
 function campaign_banner_campaign_summary_alter(&$summary, $context) {
   $campaign = campaign_get_from_context($context);
-  $active = t('Active: !link', array(
+  $info = t('!link', array(
     '!link' => l(t('Display counter'), 'admin/config/campaigns/campaign-counters', array(
       'query' => array('campaign' => $context->name, 'type' => CAMPAIGN_BANNER_ID)
     )),
   ));
-  $summary[] = array(t('Blog Banner'), $campaign['blog_banner']['active'] ? $active : t('Inactive'));
+  $summary[] = array(t('Blog Banner'), $info);
 }
 
 /**
