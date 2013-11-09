@@ -21,7 +21,8 @@ function campaign_instagram_campaign_edit_form_alter(&$form, &$form_state, $name
     // Add an extra field below existing hashtags.
     if (!empty($campaign['instagram']['tags'])) {
       $form_state['num_instagram_counters'] = count($campaign['instagram']['tags']) + 1;
-    } else {
+    }
+    else {
       $form_state['num_instagram_counters'] = 1;
     }
   }
@@ -38,7 +39,8 @@ function campaign_instagram_campaign_edit_form_alter(&$form, &$form_state, $name
     '#group' => 'campaign',
   );
   $form['campaign']['instagram']['help'] = array(
-    '#markup' => '<p>' . t('Count the media mentions with a specified tag.') . '</p>',
+    '#markup' => '<p>' . t('Count the media mentions on instagram with a specified tag.') . '</p>'
+      . '<p>' . t('To retrieve the amount of images there is a JSON endpoint as well as a JavaScript function which can be used. If the campaign is inactivated, the endpoint will be closed as well.') . '</p>',
   );
 
   $form['campaign']['instagram']['client_id'] = array(
@@ -50,7 +52,7 @@ function campaign_instagram_campaign_edit_form_alter(&$form, &$form_state, $name
   );
   $form['campaign']['instagram']['hashtag_help'] = array(
     '#markup' => '<h3>' . t('Tags') . '</h3>'
-      . '<p>' . t('Add each tag you want the campaign to track.') . '</p>',
+      . '<p>' . t('Add each tag you want the campaign to track. These will not be stored but rather used for querying the total count of images mentioning a tag using the Instagram API.') . '</p>',
   );
 
   for ($i = 1; $i <= $form_state['num_instagram_counters']; $i++) {

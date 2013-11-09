@@ -13,7 +13,8 @@ define('CAMPAIGN_PATH_COUNTER_ID', 'path');
 function campaign_path_counter_campaign_config_info() {
   return array(
     'path_counter' => array(
-      'paths' => array()
+      'paths' => array(),
+      'active' => FALSE,
     ),
   );
 }
@@ -27,7 +28,8 @@ function campaign_path_counter_campaign_edit_form_alter(&$form, &$form_state, $n
     // Add an extra field below existing hashtags.
     if (!empty($campaign['path_counter']['paths'])) {
       $form_state['num_path_counters'] = count($campaign['path_counter']['paths']) + 1;
-    } else {
+    }
+    else {
       $form_state['num_path_counters'] = 1;
     }
   }
@@ -41,8 +43,20 @@ function campaign_path_counter_campaign_edit_form_alter(&$form, &$form_state, $n
     '#weight' => 50,
     '#group' => 'campaign',
   );
+  $form['campaign']['path_counter']['active'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Activate path counting'),
+    '#description' => t('If inactive, nothing will be tracked (same if the campaign itself is inactive).'),
+    '#default_value' => $campaign['path_counter']['active'],
+  );
   $form['campaign']['path_counter']['help'] = array(
-    '#markup' => '<p>' . t('If %opt is used, the path match will only count once per referrer. This allows pages to be cached so use it when possible.', array('%top' => t('once per referrer'))) . '</p>',
+    '#markup' => '<p>' . t('Path counters can be used to track arbitrary use cases, as long as you can identify a unique URL you can track it here. QR codes with a custom URL paremeter is for example a use case. Take note that the page being tracked have to be in the active campaign path!') . '</p>'
+      . '<p>' . t('If the regular expression groups a subpattern, the value of that subpattern will be used as the referrer. For example visiting the page %url with the path pattern %regex, the referrer will be evaluated into %sub and stored as such in the database. If no subpattern is used, no referrer will be used either.', array(
+        '%url' => 'mush-jouluiloa?ref=123456',
+        '%regex' => '/mush-jouluiloa\?ref=([a-zA-Z0-9]+)$/',
+        '%sub' => '123456',
+      )) . '</p>'
+      . '<p>' . t('If %opt is used, the path match will only count once per referrer. This allows pages to be cached so use it when possible.', array('%opt' => t('once per referrer'))) . '</p>',
   );
   for ($i = 1; $i <= $form_state['num_path_counters']; $i++) {
     $idx = $i - 1;
@@ -51,7 +65,7 @@ function campaign_path_counter_campaign_edit_form_alter(&$form, &$form_state, $n
       '#title' => t('Path pattern'),
       '#description' => t('!link pattern for matching the path, eg. %regex', array(
         '!link' => l(t('Regex'), 'http://php.net/manual/en/function.preg-match.php', array('external' => TRUE)),
-        '%regex' => '/mushjouluiloa\?ref=[a-zA-Z]+$/'
+        '%regex' => '/mushjouluiloa\?ref=([a-zA-Z]+)$/'
       )),
       '#default_value' => isset($campaign['path_counter']['paths'][$idx]['regex']) ? $campaign['path_counter']['paths'][$idx]['regex'] : '',
       '#prefix' => '<div class="campaign-edit-form-column-three">',
@@ -88,27 +102,40 @@ function campaign_path_counter_campaign_edit_form_alter(&$form, &$form_state, $n
  * Implements hook_campaign_view_alter().
  */
 function campaign_path_counter_campaign_view_alter($campaign, $instance) {
-  $namespace = $campaign['contexts'][0];
-  $nocache_lifetime = variable_get('campaign_path_counter_nocache_lifetime', 300);
-  foreach ($campaign['path_counter']['paths'] as $path) {
-    // Make sure we have all we need
-    if (empty($path['regex']) || empty($path['type']) || empty($_GET['ref'])) {
-      continue;
+  static $has_run = FALSE;
+  if (!$has_run) {
+    $has_run = TRUE;
+    $namespace = $campaign['contexts'][0];
+    $nocache_lifetime = variable_get('campaign_path_counter_nocache_lifetime', 300);
+
+    // If either the path_counter is inactived or the campaign itself, dont
+    // track.
+    if (!$campaign['active'] || !$campaign['path_counter']['active']) {
+      return;
     }
-    if (preg_match($path['regex'], request_uri())) {
-      if ($path['per_referrer']) {
-        if (!($hits = campaign_counter_get_hits($namespace, $path['type'], $_GET['ref']))) {
-          campaign_counter_increment($namespace, $path['type'], $_GET['ref']);
+
+    foreach ($campaign['path_counter']['paths'] as $path) {
+      // Make sure we have all we need
+      if (empty($path['regex']) || empty($path['type'])) {
+        continue;
+      }
+      if (preg_match($path['regex'], request_uri(), $matches)) {
+        $ref = isset($matches[1]) ? $matches[1] : '';
+        if ($path['per_referrer']) {
+          if (!($hits = campaign_counter_get_hits($namespace, $path['type'], $ref))) {
+            campaign_counter_increment($namespace, $path['type'], $ref);
+          }
         }
-      } else {
         // Count each page hit. Don't cache.
-        drupal_page_is_cacheable(FALSE);
-        // Set NO_CACHE cookie for varnish
-        if (!isset($_COOKIE['NO_CACHE'])) {
-          global $cookie_domain;
-          setcookie('NO_CACHE', 'Y', $_SERVER['REQUEST_TIME'] + $nocache_lifetime, request_uri(), $cookie_domain);
+        else {
+          drupal_page_is_cacheable(FALSE);
+          // Set NO_CACHE cookie for varnish
+          if (!isset($_COOKIE['NO_CACHE'])) {
+            global $cookie_domain;
+            setcookie('NO_CACHE', 'Y', $_SERVER['REQUEST_TIME'] + $nocache_lifetime, request_uri(), $cookie_domain);
+          }
+          campaign_counter_increment($namespace, $path['type'], $ref);
         }
-        campaign_counter_increment($namespace, $path['type'], $_GET['ref']);
       }
     }
   }
@@ -163,5 +190,6 @@ function campaign_path_counter_campaign_summary_alter(&$summary, $context) {
       ),
     ));
   }
-  $summary[] = array(t('Path Counter'), implode(', ', $links));
+  $active = $campaign['path_counter']['active'] ? implode(', ', $links) : t('Inactive');
+  $summary[] = array(t('Path Counter'), $active);
 }

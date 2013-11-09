@@ -68,7 +68,8 @@ if (in_array($extension, $mimetypes) && file_exists($image)) {
   $f = fopen($image, 'rb');
   fpassthru($f);
   fclose($f);
-} else {
+}
+else {
   header('HTTP/1.0 404 Not Found');
   echo 'File not found';
 }

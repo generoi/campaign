@@ -35,7 +35,8 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
     // Add an extra field below existing banners.
     if (!empty($campaign['blog_banner']['images'])) {
       $form_state['num_blog_banners'] = count($campaign['blog_banner']['images']) + 1;
-    } else {
+    }
+    else {
       $form_state['num_blog_banners'] = 1;
     }
   }
@@ -52,13 +53,16 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
     '#group' => 'campaign',
   );
   $form['campaign']['blog_banner']['help'] = array(
-    '#markup' => '<p>' . t('Once done you copy paste the resulting HTML snippet into the page where your visitors can choose their banner. All JavaScript is readily set up.') . '</p>',
+    '#markup' => '<p>' . t('Once done you copy paste the resulting HTML snippet into the page where your visitors can choose their banner. All JavaScript is readily set up.') . '</p>'
+      . '<p>' . t('Take note, view counting cannot be disabled, even if the campaign is inactive it will continue tracking views.') . '</p>',
   );
 
   $form['campaign']['blog_banner']['href'] = array(
     '#type' => 'textfield',
     '#title' => t('Link address'),
-    '#description' => t('The path to link banners to. E.g. @url', array('@url' => url('<front>', array('absolute' => TRUE)))),
+    '#description' => t('The path to link banners to. E.g. %url', array(
+      '%url' => campaign_get_gateway_path($namespace) . '?utm_source=banner&utm_medium=banner&utm_campaign=' . $namespace,
+    )),
     '#maxlength' => 255,
     '#default_value' => $campaign['blog_banner']['href'],
   );
@@ -96,6 +100,18 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
     );
   }
 
+  $form['campaign']['blog_banner']['add_image'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add another banner image'),
+    '#submit' => array('campaign_banner_add_one'),
+    '#ajax' => array(
+      'callback' => 'campaign_add_more_callback',
+      'wrapper' => 'campaign-wrapper',
+    ),
+    '#prefix' => '<div class="campaign-edit-form-add_more">',
+    '#suffix' => '</div>',
+  );
+
   // Store the original images used so we can compare and delete
   $form_state['original_blog_banner_images'] = $campaign['blog_banner']['images'];
 
@@ -113,18 +129,6 @@ function campaign_banner_campaign_edit_form_alter(&$form, &$form_state, $namespa
       . '<textarea id="campaign_banner-html_snippet">' . htmlspecialchars($html_snippet) . '</textarea>'
       . '<p>' . t('Copy the following snippet into your page source. Feel free to rearrange within the wrapping %el. You need to save this form before copying the snippet!', array('%el' => '<div>')) . '</p>'
       . '</div>',
-  );
-
-  $form['campaign']['blog_banner']['add_image'] = array(
-    '#type' => 'submit',
-    '#value' => t('Add another banner image'),
-    '#submit' => array('campaign_banner_add_one'),
-    '#ajax' => array(
-      'callback' => 'campaign_add_more_callback',
-      'wrapper' => 'campaign-wrapper',
-    ),
-    '#prefix' => '<div class="campaign-edit-form-add_more">',
-    '#suffix' => '</div>',
   );
 }
 

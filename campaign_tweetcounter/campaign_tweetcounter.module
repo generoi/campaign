@@ -52,12 +52,17 @@ function campaign_tweetcounter_sync_page($context) {
     'campaign' => $context->name,
     'hashtags' => $campaign['tweetcounter']['hashtags'],
   );
-  $result = campaign_tweetcounter_sync($tracker);
-  foreach ($result as $hashtag => $tweets) {
-    $content .= '<p>' . t('Found @num new tweets for !hashtag', array(
-      '@num' => count($tweets),
-      '!hashtag' => '#' . $hashtag,
-    )) . '</p>';
+  if ($campaign['active'] && $campaign['tweetcounter']['active']) {
+    $result = campaign_tweetcounter_sync($tracker);
+    foreach ($result as $hashtag => $tweets) {
+      $content .= '<p>' . t('Found @num new tweets for !hashtag', array(
+        '@num' => count($tweets),
+        '!hashtag' => '#' . $hashtag,
+      )) . '</p>';
+    }
+  }
+  else {
+    drupal_set_message(t('Synchronization is inactive as either the campaign itself or the tweetcounter is set to inactive.'), 'warning');
   }
   return $content;
 }
@@ -153,8 +158,9 @@ function campaign_tweetcounter_campaign_tweetcounter_sync($namespace, $hashtag, 
           break;
         }
       }
+    }
     // Add as participant if no url is tracked.
-    } else if (!$url) {
+    elseif (!$url) {
       $participants++;
     }
   }

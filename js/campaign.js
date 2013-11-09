@@ -1,7 +1,7 @@
 (function($) {
   var isFacebook = false
     , isInit = false
-    , log = function() { console && console.log && console.log(arguments); };
+    , log = function() { return console && console.log && Function.apply.call(console.log, console, arguments); };
 
   // Sniff facebook.
   if (/^(app_runner|iframe_canvas)/.test(window.name || '')) {

@@ -25,7 +25,8 @@ function campaign_tweetcounter_campaign_edit_form_alter(&$form, &$form_state, $n
     // Add an extra field below existing hashtags.
     if (!empty($campaign['tweetcounter']['hashtags'])) {
       $form_state['num_tweet_counters'] = count($campaign['tweetcounter']['hashtags']) + 1;
-    } else {
+    }
+    else {
       $form_state['num_tweet_counters'] = 1;
     }
   }
@@ -44,10 +45,11 @@ function campaign_tweetcounter_campaign_edit_form_alter(&$form, &$form_state, $n
   $form['campaign']['tweetcounter']['active'] = array(
     '#type' => 'checkbox',
     '#title' => t('Activate Tweet Counters'),
+    '#description' => t('If inactive, tweets will not be synchronized or counted (same if the campaign itself is inactive).'),
     '#default_value' => $campaign['tweetcounter']['active'],
   );
   $form['campaign']['tweetcounter']['help'] = array(
-    '#markup' => '<p>' . t('Track and store all tweets mentioning a hashtag as well as keep a counter on the ones mentioning a specified URL as well.') . '</p>',
+    '#markup' => '<p>' . t('Track and store all tweets mentioning a hashtag as well as keep a counter on the ones mentioning a specified URL.') . '</p>',
   );
 
   $form['campaign']['tweetcounter']['oauth_access_token'] = array(
