@@ -7,7 +7,7 @@ function campaign_counter_views_default_views() {
   $view = new view();
   $view->name = 'campaign_counters';
   $view->description = 'List the hits of all campaign counters used';
-  $view->tag = 'default';
+  $view->tag = 'campaign';
   $view->base_table = 'campaign_counter';
   $view->human_name = 'Campaign counters';
   $view->core = 7;
@@ -23,11 +23,17 @@ function campaign_counter_views_default_views() {
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'better_exposed_filters';
+  $handler->display->display_options['exposed_form']['options']['reset_button_label'] = 'Palauta oletusarvoihin';
+  $handler->display->display_options['exposed_form']['options']['exposed_sorts_label'] = 'Lajittele';
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '50';
   $handler->display->display_options['pager']['options']['offset'] = '0';
   $handler->display->display_options['pager']['options']['id'] = '0';
   $handler->display->display_options['pager']['options']['quantity'] = '9';
+  $handler->display->display_options['pager']['options']['tags']['first'] = '« ensimmäinen';
+  $handler->display->display_options['pager']['options']['tags']['previous'] = '‹ edellinen';
+  $handler->display->display_options['pager']['options']['tags']['next'] = 'seuraava ›';
+  $handler->display->display_options['pager']['options']['tags']['last'] = 'viimeinen »';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['columns'] = array(
     'id' => 'id',
@@ -35,6 +41,7 @@ function campaign_counter_views_default_views() {
     'type' => 'type',
     'ref' => 'ref',
     'hits' => 'hits',
+    'updated' => 'updated',
   );
   $handler->display->display_options['style_options']['default'] = 'hits';
   $handler->display->display_options['style_options']['info'] = array(
@@ -73,32 +80,44 @@ function campaign_counter_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
+    'updated' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'desc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
   );
-  /* Field: Campaign counter: ID */
+  /* Kenttä: Campaign counter: ID */
   $handler->display->display_options['fields']['id']['id'] = 'id';
   $handler->display->display_options['fields']['id']['table'] = 'campaign_counter';
   $handler->display->display_options['fields']['id']['field'] = 'id';
-  /* Field: Campaign counter: Campaign */
+  /* Kenttä: Campaign counter: Campaign */
   $handler->display->display_options['fields']['campaign']['id'] = 'campaign';
   $handler->display->display_options['fields']['campaign']['table'] = 'campaign_counter';
   $handler->display->display_options['fields']['campaign']['field'] = 'campaign';
   $handler->display->display_options['fields']['campaign']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['campaign']['alter']['path'] = 'admin/config/campaigns/[campaign]';
-  /* Field: Campaign counter: Type */
+  /* Kenttä: Campaign counter: Tyyppi */
   $handler->display->display_options['fields']['type']['id'] = 'type';
   $handler->display->display_options['fields']['type']['table'] = 'campaign_counter';
   $handler->display->display_options['fields']['type']['field'] = 'type';
-  /* Field: Campaign counter: Referrer */
+  /* Kenttä: Campaign counter: Viittaaja */
   $handler->display->display_options['fields']['ref']['id'] = 'ref';
   $handler->display->display_options['fields']['ref']['table'] = 'campaign_counter';
   $handler->display->display_options['fields']['ref']['field'] = 'ref';
   $handler->display->display_options['fields']['ref']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['ref']['alter']['path'] = 'http://[ref]';
   $handler->display->display_options['fields']['ref']['alter']['external'] = TRUE;
-  /* Field: Campaign counter: Hit count */
+  /* Kenttä: Campaign counter: Hit count */
   $handler->display->display_options['fields']['hits']['id'] = 'hits';
   $handler->display->display_options['fields']['hits']['table'] = 'campaign_counter';
   $handler->display->display_options['fields']['hits']['field'] = 'hits';
+  /* Kenttä: Campaign counter: Päivitetty */
+  $handler->display->display_options['fields']['updated']['id'] = 'updated';
+  $handler->display->display_options['fields']['updated']['table'] = 'campaign_counter';
+  $handler->display->display_options['fields']['updated']['field'] = 'updated';
+  $handler->display->display_options['fields']['updated']['date_format'] = 'short';
   /* Filter criterion: Campaign counter: Campaign */
   $handler->display->display_options['filters']['campaign']['id'] = 'campaign';
   $handler->display->display_options['filters']['campaign']['table'] = 'campaign_counter';
@@ -119,7 +138,7 @@ function campaign_counter_views_default_views() {
     4 => 0,
     3 => 0,
   );
-  /* Filter criterion: Campaign counter: Referrer */
+  /* Filter criterion: Campaign counter: Viittaaja */
   $handler->display->display_options['filters']['ref']['id'] = 'ref';
   $handler->display->display_options['filters']['ref']['table'] = 'campaign_counter';
   $handler->display->display_options['filters']['ref']['field'] = 'ref';
@@ -139,7 +158,7 @@ function campaign_counter_views_default_views() {
     4 => 0,
     3 => 0,
   );
-  /* Filter criterion: Campaign counter: Type */
+  /* Filter criterion: Campaign counter: Tyyppi */
   $handler->display->display_options['filters']['type']['id'] = 'type';
   $handler->display->display_options['filters']['type']['table'] = 'campaign_counter';
   $handler->display->display_options['filters']['type']['field'] = 'type';
