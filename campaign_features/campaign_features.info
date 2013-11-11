@@ -1,0 +1,9 @@
+name = Campaign Features
+description = Provide feature integration for campaigns.
+dependencies[] = campaign
+dependencies[] = node_export
+dependencies[] = node_export_dependency
+dependencies[] = node_export_features
+package = custom
+core = 7.x
+

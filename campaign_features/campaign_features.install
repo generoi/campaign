@@ -1,0 +1,9 @@
+<?php
+
+/**
+ * Implements hook_enable().
+ */
+function campaign_features_enable() {
+  // We rely on revisions being used, otherwise duplicate nodes are created.
+  variable_set('node_export_existing', 'revision');
+}

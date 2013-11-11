@@ -1,0 +1,69 @@
+<?php
+
+/**
+ * Implements hook_features_api().
+ */
+function campaign_features_api() {
+  $components = array(
+    'campaign' => array(
+      'name' => t('Campaigns'),
+      'feature_source' => TRUE,
+      'default_hook' => 'campaign_export_defaults',
+      'default_file' => FEATURES_DEFAULTS_INCLUDED,
+      'file' => drupal_get_path('module', 'campaign_features') . '/campaign_features.features.inc',
+    ),
+  );
+  return $components;
+}
+
+/**
+ * Implements hook_campaign_config_info().
+ */
+function campaign_features_campaign_config_info() {
+  return array(
+    'config' => array(
+      'content_types' => NULL,
+    )
+  );
+}
+
+/**
+ * Implements hook_campaign_edit_form_alter().
+ */
+function campaign_features_campaign_edit_form_alter(&$form, &$form_state, $namespace, $campaign) {
+  $form['campaign']['config']['content_types'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Related content types'),
+    '#description' => t('A comma separated list of content types which belong solely(!) to this campaign. If checked, all nodes of this type will be exported with campaign features.'),
+    '#maxlength' => 255,
+    '#default_value' => $campaign['config']['content_types'],
+    '#element_validate' => array('_campaign_features_is_content_type'),
+  );
+}
+
+/**
+ * Validate that each type in the comma separated list is a valid content type.
+ */
+function _campaign_features_is_content_type($element, &$form_state) {
+  $types = array_keys(node_type_get_names());
+  foreach (explode(',', $element['#value']) as $type) {
+    if (($type = trim($type)) && !in_array($type, $types)) {
+      form_error($element, t('%type is not a valid content type', array('%type' => $type)));
+    }
+  }
+}
+
+/**
+ * Implements hook_query_alter().
+ *
+ * Node export features only displays the 250 first nodes, so order them
+ * with the newest first.
+ */
+function campaign_features_query_alter(QueryAlterableInterface $query) {
+  if ($query->hasTag('node_export_features')) {
+    $order =& $query->getOrderBy();
+    unset($order['type']);
+    unset($order['title']);
+    $query->orderBy('created', 'DESC');
+  }
+}

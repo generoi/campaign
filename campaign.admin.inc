@@ -147,12 +147,18 @@ function campaign_summary($context) {
   $inactive_page = $configs['config']['inactive'];
   $summary[] = array('Inactive page', $inactive_page ? l($inactive_page, $inactive_page, array('language' => $language)) : t('Not configured'));
 
-  $rules = _campaign_ui_get_rules_by_tag($context->name);
+  $rules = array();
+  foreach (campaign_get_related_rules($context->name) as $id => $entity) {
+    $rules[] = l($entity->label, RulesPluginUI::path($id));
+  }
   if (!empty($rules)) {
     $summary[] = array('Related rules', implode(', ', $rules));
   }
 
-  $views = _campaign_ui_get_views_by_tag($context->name);
+  $views = array();
+  foreach (campaign_get_related_views($context->name) as $view) {
+    $views[] = l($view->get_human_name(), 'admin/structure/views/view/' . $view->name . '/edit');
+  }
   if (!empty($views)) {
     $summary[] = array('Related views', implode(', ', $views));
   }
@@ -164,34 +170,6 @@ function campaign_summary($context) {
     'rows' => $summary,
     'attributes' => array('class' => array('campaign-config-summary', $active_class)),
   ));
-}
-
-/**
- * Return an array of links to rules tagged with tag name.
- */
-function _campaign_ui_get_rules_by_tag($name) {
-  $entities = entity_load('rules_config', FALSE, array('tags' => array($name)));
-  $rules = array();
-  foreach ($entities as $id => $entity) {
-    $rules[] = l($entity->label, RulesPluginUI::path($id));
-  }
-  return $rules;
-}
-
-/**
- * Return an array of links to views tagged with tag name.
- */
-function _campaign_ui_get_views_by_tag($name) {
-  $views = array();
-  foreach (views_get_all_views() as $view) {
-    if (!empty($view->tag)) {
-      $tags = drupal_explode_tags($view->tag);
-      if (in_array($name, $tags)) {
-        $views[] = l($view->get_human_name(), 'admin/structure/views/view/' . $view->name . '/edit');
-      }
-    }
-  }
-  return $views;
 }
 
 /**

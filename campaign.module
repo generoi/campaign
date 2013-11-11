@@ -303,6 +303,53 @@ function campaign_get_from_context($context) {
 }
 
 /**
+ * Get a list of all views tagged with the campaign name.
+ */
+function campaign_get_related_views($name) {
+  $views = array();
+  foreach (views_get_all_views() as $view) {
+    if (!empty($view->tag)) {
+      $tags = drupal_explode_tags($view->tag);
+      if (in_array($name, $tags)) {
+        $views[] = $view;
+      }
+    }
+  }
+  return $views;
+}
+
+/**
+ * Get a list of view names which have tagged a campaign name.
+ * @see campaign_get_related_views().
+ */
+function campaign_get_related_view_names($name) {
+  return db_select('views_view', 'c')
+    ->fields('c', array('name'))
+    ->condition('tag', '%' . db_like($name) . '%', 'LIKE')
+    ->execute()
+    ->fetchCol();
+}
+
+/**
+ * Get a list of all rules tagged with the campaign name
+ */
+function campaign_get_related_rules($name) {
+  return entity_load('rules_config', FALSE, array('tags' => array($name)));
+}
+
+/**
+ * Get a list of context names which are tagged with the campaign name.
+ */
+function campaign_get_related_context_names($name) {
+  return db_select('context', 'c')
+    ->fields('c', array('name'))
+    ->condition('tag', $name)
+    ->execute()
+    ->fetchCol();
+}
+
+
+/**
  * Get a list of all campaign names
  */
 function campaign_list($reset = FALSE) {
