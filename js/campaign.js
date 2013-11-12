@@ -33,7 +33,7 @@
       Drupal.campaign.attachEvents();
       Drupal.campaign.executeQueue();
 
-      if (settings.campaign.force_facebook) {
+      if (settings.campaign && settings.campaign.force_facebook) {
         Drupal.campaign.forceFacebook();
       }
     }
