@@ -57,7 +57,7 @@ if (!isset($_COOKIE['NO_CACHE'])) {
   setcookie('NO_CACHE', 'Y', $_SERVER['REQUEST_TIME'] + 300, $_SERVER['REQUEST_URI'], $_SERVER['SERVER_NAME']);
 }
 
-if (in_array($extension, $mimetypes) && file_exists($image)) {
+if (in_array($extension, array_keys($mimetypes)) && file_exists($image)) {
   if (isset($ref)) {
     $db = new DB($databases);
     $db->increment($ref, $campaign);
