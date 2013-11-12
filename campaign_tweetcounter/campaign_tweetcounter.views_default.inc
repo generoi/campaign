@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Implements hook_views_default_view().
+ * Implements hook_views_default_views().
  */
-function campaign_tweetcounter_views_default_view() {
+function campaign_tweetcounter_views_default_views() {
   $view = new view();
   $view->name = 'campaign_tweets';
   $view->description = '';
