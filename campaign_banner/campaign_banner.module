@@ -169,6 +169,34 @@ function campaign_banner_rename_submit($form, &$form_state) {
     }
   }
 }
+/**
+ * Implements hook_form_campaign_context_clone_alter().
+ */
+function campaign_banner_form_campaign_context_clone_form_alter(&$form, &$form_state) {
+  $form['#submit'][] = 'campaign_banner_clone_submit';
+}
+
+/**
+ * Hook into campaign clone and copy the images to the new directory.
+ */
+function campaign_banner_clone_submit($form, &$form_state) {
+  $namespace = $form_state['values']['name'];
+  $campaign = campaign_get($namespace);
+
+  foreach ($campaign['blog_banner']['images'] as &$image) {
+    if (isset($image['file'])) {
+      $dir = CAMPAIGN_BANNER_UPLOAD_DIR . $namespace . '/';
+      $filepath = $dir . $image['filename'];
+      if (file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
+        $file = file_load($image['file']);
+        $file = file_copy($file, $filepath, FILE_EXISTS_REPLACE);
+        $image['file'] = $file->fid;
+        file_usage_add($file, 'campaign', 'campaign', 1);
+      }
+    }
+  }
+  context_save($campaign);
+}
 
 /**
  * AJAX callback

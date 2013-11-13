@@ -38,6 +38,10 @@ function campaign_overview() {
       'title' => t('Delete'),
       'href' => 'admin/config/campaigns/' . $context->name . '/delete',
     );
+    $operations['clone'] = array(
+      'title' => t('Clone'),
+      'href' => 'admin/config/campaigns/' . $context->name . '/clone',
+    );
 
     $facebook['inspect'] = array(
       'title' => t('Developers'),
@@ -430,11 +434,49 @@ function campaign_context_rename_form($form, &$form_state, $context) {
   );
   return $form;
 }
+
 function campaign_context_rename_form_submit($form, &$form_state) {
   $new = clone($form_state['campaign']['context']);
   $new->name = $form_state['values']['name'];
   context_save($new);
   context_delete($form_state['campaign']['context']);
+  $form_state['redirect'] = 'admin/config/campaigns';
+}
+
+function campaign_context_clone_form($form, &$form_state, $context) {
+  $form_state['campaign']['context'] = $context;
+
+  $form['original_name'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $context->name,
+  );
+  $form['help'] = array(
+    '#markup' => '<p>' . t('Cloning a campaign, means cloning its configuration, NOT its related content.') . '</p>',
+  );
+  $form['name'] = array(
+    '#title' => t('Namespace / Context ID'),
+    '#description' => t('This machine name has to be identical to the Facebook app namespace.'),
+    '#type' => 'textfield',
+    '#default_value' => $context->name,
+    '#element_validate' => array('campaign_context_name_validate'),
+  );
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['save'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clone'),
+  );
+  $form['actions']['cancel'] = array(
+    '#type' => 'link',
+    '#title' => t('Cancel'),
+    '#href' => isset($_GET['destination']) ? $_GET['destination'] : 'admin/config/campaigns',
+  );
+  return $form;
+}
+
+function campaign_context_clone_form_submit($form, &$form_state) {
+  $new = clone($form_state['campaign']['context']);
+  $new->name = $form_state['values']['name'];
+  context_save($new);
   $form_state['redirect'] = 'admin/config/campaigns';
 }
 
