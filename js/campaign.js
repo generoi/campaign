@@ -23,11 +23,6 @@
     }
   });
 
-  // Load facebook network even on pages with widgets.
-  if (window.Socialite && !window.Socialite.networkReady('facebook')) {
-    Socialite.appendNetwork(Socialite.networks.facebook);
-  }
-
   Drupal.behaviors.campaign = {
     attach: function(context, settings) {
       Drupal.campaign.attachEvents();
@@ -104,6 +99,38 @@
       });
     });
   }
+
+  function updateQueryStringParameters(uri, params) {
+    for (var key in params) if (params.hasOwnProperty(key)) {
+      var re = new RegExp('([?|&])' + key + '=.*?(&|$)', 'i')
+        , separator = uri.indexOf('?') !== -1 ? '&' : '?';
+      if (uri.match(re)) {
+        uri = uri.replace(re, '$1' + key + '=' + params[key] + '$2');
+      }
+      else {
+        uri = uri + separator + key + '=' + params[key];
+      }
+    }
+    return uri;
+  }
+
+  /**
+   * Alter the socialite facebook like buttons by adding UTM parameters.
+   */
+  Drupal.campaign.setUTM = function(e, attributes) {
+    var params = {
+      utm_source: 'facebook',
+      utm_medium: 'like',
+    };
+    if (campaign = Drupal.settings.campaign && Drupal.settings.campaign.namespace) {
+      params.utm_campaign = campaign;
+    }
+
+    attributes.href = updateQueryStringParameters(attributes.href, params);
+  }
+
+  // Currently only for facebook likes!
+  $.subscribe('socialite.alterAttributes', Drupal.campaign.setUTM);
 
   /**
    * Make sure the callback runs after FB has been inited.
