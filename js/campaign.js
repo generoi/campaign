@@ -118,6 +118,10 @@
    * Alter the socialite facebook like buttons by adding UTM parameters.
    */
   Drupal.campaign.setUTM = function(e, attributes) {
+    // Only active on campaign pages.
+    if (!(Drupal.settings && Drupal.settings.campaign && Drupal.settings.campaign.namespace)) {
+      return;
+    }
     var params = {
       utm_source: 'facebook',
       utm_medium: 'like',
