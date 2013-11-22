@@ -4,7 +4,13 @@
  * A link-friendly page which redirects to the gateway.
  */
 function campaign_fb_redirect($context) {
-  drupal_goto(campaign_get_gateway_path($context->name));
+  drupal_goto(campaign_get_gateway_path($context->name, NULL, array(
+    'query' => array(
+      'utm_source' => 'facebook',
+      'utm_medium' => 'shortlink',
+      'utm_campaign' => $context->name,
+    ),
+  )));
 }
 
 /**

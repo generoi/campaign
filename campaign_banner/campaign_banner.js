@@ -22,7 +22,7 @@
     var ref = clean(window.prompt(Drupal.t('Enter the URL of your blog'), 'http://')),
       filename = $(this).find('img').prop('src'),
       image = filename + '&ref=' + window.encodeURIComponent(ref),
-      href = event.data.href,
+      href = event.data.href + '?utm_source=' + window.encodeURIComponent(ref),
       alt = event.data.alt,
       snippet = Drupal.campaignBanner.generate(href, image, alt);
 

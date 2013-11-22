@@ -515,7 +515,6 @@ function campaign_process_page(&$variables) {
   }
 }
 
-
 /**
  * Implements hook_social_facebook_defaults_alter().
  *
@@ -732,11 +731,11 @@ function campaign_campaign_edit_form(array &$form, &$form_state, $namespace, $ca
 /**
  * Return the gateway path of a campaign namespace.
  */
-function campaign_get_gateway_path($namespace, $language = NULL) {
+function campaign_get_gateway_path($namespace, $language = NULL, $options = array()) {
   $path = url('gateway/' . $namespace . '/', array(
     'absolute' => TRUE,
     'language' => $language,
-  ));
+  ) + $options);
   // @TODO can we introduce an alter hook here?
   return $path;
 }

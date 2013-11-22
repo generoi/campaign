@@ -18,6 +18,11 @@ function campaign_tweetcounter_menu() {
     'page arguments' => array(5),
     'access arguments' => array('access tweetcounter'),
   );
+  $items['tw/%context'] = array(
+    'page callback' => 'campaign_tweetcounter_tw_redirect',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+  );
   return $items;
 }
 
@@ -40,6 +45,15 @@ function campaign_tweetcounter_views_api() {
   return array(
     'api' => 3,
   );
+}
+function campaign_tweetcounter_tw_redirect($context) {
+  drupal_goto(campaign_get_gateway_path($context->name, NULL, array(
+    'query' => array(
+      'utm_source' => 'twitter',
+      'utm_medium' => 'shortlink',
+      'utm_campaign' => $context->name,
+    ),
+  )));
 }
 
 /**
