@@ -40,13 +40,13 @@ function campaign_banner_campaign_config_info() {
 
 function campaign_banner_redirect($campaign) {
   $params = array(
-    'utm_campaign' => $campaign->name,
-    'utm_medium' => 'banner',
+    'utm_medium' => isset($_GET['utm_medium']) ? $_GET['utm_medium'] : 'banner',
+    'utm_campaign' => isset($_GET['utm_campaign']) ? $_GET['utm_campaign'] : $context->name,
   );
   if (isset($_GET['utm_source'])) {
     $params['utm_source'] = $_GET['utm_source'];
   }
-  drupal_goto(campaign_get_gateway_path($campaign->name, NULL, $params));
+  drupal_goto(campaign_get_gateway_path($campaign->name, NULL, array('query' => $params)));
 }
 
 /**

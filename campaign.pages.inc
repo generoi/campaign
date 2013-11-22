@@ -6,9 +6,9 @@
 function campaign_fb_redirect($context) {
   drupal_goto(campaign_get_gateway_path($context->name, NULL, array(
     'query' => array(
-      'utm_source' => 'facebook',
-      'utm_medium' => 'shortlink',
-      'utm_campaign' => $context->name,
+      'utm_source' => isset($_GET['utm_source']) ? $_GET['utm_source'] : 'facebook',
+      'utm_medium' => isset($_GET['utm_medium']) ? $_GET['utm_medium'] : 'shortlink',
+      'utm_campaign' => isset($_GET['utm_campaign']) ? $_GET['utm_campaign'] : $context->name,
     ),
   )));
 }
