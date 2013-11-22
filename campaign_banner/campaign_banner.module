@@ -294,7 +294,7 @@ function _campaign_banner_generate_snippet($config) {
 
   foreach ($config['images'] as $image) {
     $snippet .= "\n  "
-      . '<a class="banner-generator" href="' . $config['href'] . '">'
+      . '<a class="banner-generator" href="#">'
         . '<img src="' . $config['script'] . '?campaign=' . $config['campaign'] . '&image=' . $image['filename'] . '" />'
       . '</a>';
   }
