@@ -211,10 +211,11 @@ function campaign_banner_clone_submit($form, &$form_state) {
       $dir = CAMPAIGN_BANNER_UPLOAD_DIR . $namespace . '/';
       $filepath = $dir . $image['filename'];
       if (file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
-        $file = file_load($image['file']);
-        $file = file_copy($file, $filepath, FILE_EXISTS_REPLACE);
-        $image['file'] = $file->fid;
-        file_usage_add($file, 'campaign', 'campaign', 1);
+        if ($file = file_load($image['file'])) {
+          $file = file_copy($file, $filepath, FILE_EXISTS_REPLACE);
+          $image['file'] = $file->fid;
+          file_usage_add($file, 'campaign', 'campaign', 1);
+        }
       }
     }
   }
@@ -245,9 +246,10 @@ function campaign_banner_campaign_save_alter($form, $form_state, &$context) {
 
       // If a file was removed, delete it.
       if (isset($form_state['original_blog_banner_images'][$idx]['file'])) {
-        $file = file_load($form_state['original_blog_banner_images'][$idx]['file']);
-        file_usage_delete($file, 'campaign', 'campaign', 1);
-        file_delete($file);
+        if ($file = file_load($form_state['original_blog_banner_images'][$idx]['file'])) {
+          file_usage_delete($file, 'campaign', 'campaign', 1);
+          file_delete($file);
+        }
       }
       continue;
     }
