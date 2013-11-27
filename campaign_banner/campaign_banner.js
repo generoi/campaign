@@ -53,17 +53,21 @@
 
 
   function clean(url) {
-    var match = url.match(/^(?:https?:\/\/)?((?:\w+\.){1,2}\w+(?:\/\w+(?!\.))?).*/);
+    var match = url.match(/^(?:https?:\/\/)?((?:\w+\.)+\w+(?:\/\w+\/?(?!.))?).*/);
     if (match) return match[1];
     return false;
   }
   // Test regexp
-  // var regexp = /^(?:https?:\/\/)?((?:\w+\.){1,2}\w+(?:\/\w+(?!.))?).*/;
+  // var regexp = /^(?:https?:\/\/)?((?:\w+\.)+\w+(?:\/\w+\/?(?!.))?).*/;
   // ['http://www.google.com'
-  //   ,'https://www.google.com'
-  //   ,'http://google.com'
-  //   ,'http://www.google.com/path'
-  //   ,'http://www.google.com/path.php'
-  //   ,'www.google.com/path.php'
+  // ,'https://www.google.com'
+  // ,'http://google.com'
+  // ,'http://google.com/'
+  // ,'http://www.google.com/path'
+  // ,'http://www.google.com/path/'
+  // ,'http://www.google.com/path.php'
+  // ,'http://www.foo.bar.blogspot.com/path'
+  // ,'http://www.foo.blogspot.com/path.php'
+  // ,'www.google.com/path.php'
   // ].forEach(function(url) { console.log(url.match(regexp)); });
 }(jQuery));
