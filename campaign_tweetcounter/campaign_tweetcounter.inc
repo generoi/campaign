@@ -106,7 +106,7 @@ function _campaign_tweetcounter_fetch_new($hashtag, $namespace) {
         'id' => $status->id,
         'created' => strtotime($status->created_at),
         'user' => $status->user->id_str,
-        'text' => $status->text,
+        'text' => _utf8_4byte_to_3byte($status->text),
         'language' => $status->metadata->iso_language_code,
         'hashtag' => $hashtag,
       );
@@ -123,4 +123,45 @@ function _campaign_tweetcounter_fetch_new($hashtag, $namespace) {
   }
 
   return $all_statuses;
+}
+
+/**
+ * Sanitize 4-byte UTF8 chars; no full utf8mb4 support in drupal7+mysql stack.
+ * This solution runs in O(n) time BUT assumes that all incoming input is
+ * strictly UTF8.
+ *
+ * @return
+ *   the sanitized input
+ */
+function _utf8_4byte_to_3byte($input) {
+  if (!empty($input)) {
+    $utf8_2byte = 0xC0 /*1100 0000*/; $utf8_2byte_bmask = 0xE0 /*1110 0000*/;
+    $utf8_3byte = 0xE0 /*1110 0000*/; $utf8_3byte_bmask = 0XF0 /*1111 0000*/;
+    $utf8_4byte = 0xF0 /*1111 0000*/; $utf8_4byte_bmask = 0xF8 /*1111 1000*/;
+
+    $sanitized = "";
+    $len = strlen($input);
+    for ($i = 0; $i < $len; ++$i) {
+      $mb_char = $input[$i]; // Potentially a multibyte sequence
+      $byte = ord($mb_char);
+      if (($byte & $utf8_2byte_bmask) == $utf8_2byte) {
+        $mb_char .= $input[++$i];
+      }
+      else if (($byte & $utf8_3byte_bmask) == $utf8_3byte) {
+        $mb_char .= $input[++$i];
+        $mb_char .= $input[++$i];
+      }
+      else if (($byte & $utf8_4byte_bmask) == $utf8_4byte) {
+        // Replace with ? to avoid MySQL exception
+        $mb_char = '?';
+        $i += 3;
+      }
+
+      $sanitized .=  $mb_char;
+    }
+
+    $input= $sanitized;
+  }
+
+  return $input;
 }

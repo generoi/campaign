@@ -119,6 +119,7 @@ function campaign_tweetcounter_cron_queue_info() {
     'worker callback' => 'campaign_tweetcounter_sync',
     'time' => 15,
   );
+  return $queues;
 }
 
 /**

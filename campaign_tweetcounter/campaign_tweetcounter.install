@@ -30,7 +30,7 @@ function campaign_tweetcounter_schema() {
       ),
       'text' => array(
         'type' => 'varchar',
-        'length' => 140,
+        'length' => 255,
         'description' => 'Tweet text',
       ),
       'user' => array(
