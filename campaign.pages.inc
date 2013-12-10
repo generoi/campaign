@@ -48,7 +48,7 @@ function campaign_gateway($namespace, $config) {
   $state = 0;
   $query = drupal_get_query_parameters();
   $data = campaign_get_signed_request($config['fb']['appid'], $config['fb']['secret']);
-  $is_inactive = isset($config['active']) && $config['active'] === FALSE && !empty($config['config']['inactive']);
+  $is_inactive = isset($config['active']) && $config['active'] == FALSE && !empty($config['config']['inactive']);
   $detect = new Mobile_Detect();
   // @TODO for some reason, url() does not prepend the language prefix.
   global $language;
