@@ -41,16 +41,13 @@ function campaign_instagram_add_one($form, &$form_state) {
  */
 function campaign_instagram_json($namespace) {
   $campaign = campaign_get($namespace);
-  // Disable functionality when the campaign is inactive.
-  if ($campaign['active']) {
-    $client_id = $campaign['instagram']['client_id'];
-    $data = new stdClass();
-    $data->result = 0;
-    foreach ($campaign['instagram']['tags'] as $tag_data) {
-      $tag = preg_replace('/^\s*\#?([a-zA-Z0-9-_]+)\s*$/', '$1', $tag_data['tag']);
-      if ($result = campaign_instagram_get_tag($tag, $client_id)) {
-        $data->result += $result;
-      }
+  $client_id = $campaign['instagram']['client_id'];
+  $data = new stdClass();
+  $data->result = 0;
+  foreach ($campaign['instagram']['tags'] as $tag_data) {
+    $tag = preg_replace('/^\s*\#?([a-zA-Z0-9-_]+)\s*$/', '$1', $tag_data['tag']);
+    if ($result = campaign_instagram_get_tag($tag, $client_id)) {
+      $data->result += $result;
     }
   }
   return $data;
