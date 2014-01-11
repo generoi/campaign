@@ -62,11 +62,11 @@
           $deferred.resolve(data.result, 'success');
         })
         .fail(function(data) {
-          console && console.log && console.log('Error fetching: ' + path, arguments);
+          if (console && console.log) console.log('Error fetching: ' + path, arguments);
           $deferred.resolve(0, 'error');
         });
     }
 
     return $deferred.promise();
-  }
+  };
 }(jQuery));

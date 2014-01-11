@@ -16,7 +16,7 @@
     $el.on('click', '.banner-generator', data, function(event) {
       Drupal.campaignBanner.generateBanner.call(this, event, $output);
     });
-  }
+  };
 
   Drupal.campaignBanner.generateBanner = function(event, $output) {
     var ref = clean(window.prompt(Drupal.t('Enter the URL of your blog'), 'http://')),
@@ -32,7 +32,7 @@
       scrollTop: $output.offset().top
     }, 500);
     event.preventDefault();
-  }
+  };
 
   Drupal.campaignBanner.generate = function (href, image, alt) {
     return [

@@ -1,3 +1,4 @@
+/* global FB:true */
 (function($) {
   var isFacebook = false
     , isInit = false
@@ -66,16 +67,15 @@
     if (Drupal.settings.campaign && Drupal.settings.campaign.dialogs) {
       dialogs = dialogs.concat(Drupal.settings.campaign.dialogs);
       // Empty the list not to prompt the user on possible AJAX requests.
-      settings.dialogs = [];
+      Drupal.settings.campaign.dialogs = [];
     }
+    function execute(obj) { this.ui(obj); }
     for (var i = 0, l = dialogs.length; i < l; i++) {
       var obj = dialogs[i];
       if (isFacebook) {
-        Drupal.campaign.run(function() {
-          this.ui(obj);
-        });
+        Drupal.campaign.run($.proxy(execute, FB, obj));
       }
-      console && console.log && console.log('Display dialog', obj);
+      if (console && console.log) console.log('Display dialog', obj);
     }
     window.dialogs = [];
   };
@@ -98,7 +98,7 @@
         }
       });
     });
-  }
+  };
 
   function updateQueryStringParameters(uri, params) {
     for (var key in params) if (params.hasOwnProperty(key)) {
@@ -126,12 +126,13 @@
       utm_source: 'facebook',
       utm_medium: 'like',
     };
-    if (campaign = Drupal.settings.campaign && Drupal.settings.campaign.namespace) {
+    var campaign = Drupal.settings.campaign && Drupal.settings.campaign.namespace;
+    if (campaign) {
       params.utm_campaign = campaign;
     }
 
     attributes.href = updateQueryStringParameters(attributes.href, params);
-  }
+  };
 
   // Currently only for facebook likes!
   $.subscribe('socialite.alterAttributes', Drupal.campaign.setUTM);
@@ -184,6 +185,6 @@
         $deferred.resolve([0, 'error']);
       });
     return $deferred;
-  }
+  };
 
 }(jQuery));

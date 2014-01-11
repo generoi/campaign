@@ -15,10 +15,10 @@
         $deferred.resolve([data.result, 'success']);
       })
       .fail(function(data) {
-        console && console.log && console.log('Error fetching: ' + path);
+        if (console && console.log) console.log('Error fetching: ' + path);
         $deferred.resolve([0, 'error']);
       });
 
     return $deferred;
-  }
+  };
 }(jQuery));
