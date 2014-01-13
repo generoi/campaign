@@ -6,6 +6,6 @@
          $this.parent('div').next('.campaign-config-details').slideToggle();
          event.stopPropagation();
       });
-    },
+    }
   };
 }(jQuery));

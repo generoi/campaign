@@ -124,7 +124,7 @@
     }
     var params = {
       utm_source: 'facebook',
-      utm_medium: 'like',
+      utm_medium: 'like'
     };
     var campaign = Drupal.settings.campaign && Drupal.settings.campaign.namespace;
     if (campaign) {
