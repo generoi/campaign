@@ -478,8 +478,10 @@ function campaign_preprocess_html(&$variables) {
   if (!empty($campaign)) {
     // Set campaign specific clasess on the body
     $variables['classes_array'][] = 'campaign';
-    foreach ($campaign['contexts'] as $context) {
-      $variables['classes_array'][] = 'campaign-' . $context;
+    if (!empty($campaign['contexts'])) {
+      foreach ($campaign['contexts'] as $context) {
+        $variables['classes_array'][] = 'campaign-' . $context;
+      }
     }
     if (drupal_get_normal_path($campaign['config']['prelike']) == $_GET['q']) {
       $variables['classes_array'][] = 'before-like';
